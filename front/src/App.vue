@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import GuestLayout from '@/layouts/GuestLayout.vue'
@@ -21,4 +21,21 @@ const currentLayout = computed(() => {
     <RouterView />
   </component>
   <RouterView v-else />
+</template> -->
+<script setup>
+import { onMounted } from 'vue'
+import { useAuthStore } from './stores/authStore'
+
+const authStore = useAuthStore()
+
+
+// Au démarrage de l'application, vérifier si l'utilisateur a encore une session active
+// Cela permet de rester connecté après un rechargement de page
+onMounted(() => {
+  authStore.fetchUser()
+})
+</script>
+
+<template>
+  <router-view />
 </template>
