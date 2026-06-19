@@ -27,7 +27,7 @@ class AuthController extends Controller
         ]);
 
         // 2. Récupérer le rôle "user" par défaut (tout nouvel inscrit est un simple user)
-        $roleUser = Role::where('name', 'user')->firstOrFail();
+        $roleUser = Role::where('slug', 'user')->firstOrFail();
 
         // 3. Créer le compte en base de données
         $user = User::create([
