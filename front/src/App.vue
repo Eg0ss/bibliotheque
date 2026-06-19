@@ -25,6 +25,7 @@ const currentLayout = computed(() => {
 <script setup>
 import { onMounted } from 'vue'
 import { useAuthStore } from './stores/authStore'
+import NavBar from './components/common/NavBar.vue'
 
 const authStore = useAuthStore()
 
@@ -37,5 +38,6 @@ onMounted(() => {
 </script>
 
 <template>
+  <nav-bar />
   <router-view />
 </template>
