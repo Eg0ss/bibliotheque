@@ -159,13 +159,24 @@ const routes = [
   },
 
   // ── Routes protégées : Admin ───────────────────────────────
-  {
-    path: '/admin',
-    meta: { requiresAuth: true, role: 'admin' },
-    children: [
-      { path: '', component: () => import('../views/admin/PublicationView.vue') },
-    ],
-  },
+{
+  path: '/admin',
+  meta: { requiresAuth: true, role: 'admin' },
+  children: [
+    // Tableau de bord admin (page d'accueil de l'espace admin)
+    { path: '',              name: 'admin.dashboard',      component: () => import('../views/admin/DashboardView.vue') },
+
+    // Gestion des utilisateurs
+    { path: 'utilisateurs',         name: 'admin.users',          component: () => import('../views/admin/UsersListView.vue') },
+    { path: 'utilisateurs/nouveau', name: 'admin.users.create',   component: () => import('../views/admin/UserCreateView.vue') },
+    { path: 'utilisateurs/:id',     name: 'admin.users.show',     component: () => import('../views/admin/UserShowView.vue') },
+
+    // Publication / Assignation / Décision (déjà existants)
+    { path: 'publication',  name: 'admin.publication',    component: () => import('../views/admin/PublicationView.vue') },
+    { path: 'assignation',  name: 'admin.assignation',    component: () => import('../views/admin/AssignmentView.vue') },
+    { path: 'decision',     name: 'admin.decision',       component: () => import('../views/admin/FinalDecisionView.vue') },
+  ],
+},
 
   // ── Routes protégées : Gestionnaire ───────────────────────
   {
