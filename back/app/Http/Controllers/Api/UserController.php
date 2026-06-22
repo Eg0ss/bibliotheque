@@ -95,4 +95,19 @@ class UserController extends Controller
     {
         // À implémenter
     }
+
+    /**
+     * LISTER les rôles disponibles
+     * Route : GET /api/admin/roles
+     * Utilisé par le <select> du formulaire UserCreateView.vue
+     */
+    public function getRoles()
+    {
+        // On retourne tous les rôles, format simple { id, name, slug }
+        $roles = Role::orderBy('name')->get(['id', 'name', 'slug']);
+
+        return response()->json([
+            'data' => $roles
+        ]);
+    }
 }

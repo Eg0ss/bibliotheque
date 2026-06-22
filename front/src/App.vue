@@ -1,43 +1,40 @@
-<!-- <script setup>
+<script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import GuestLayout from '@/layouts/GuestLayout.vue'
-import UserLayout from '@/layouts/UserLayout.vue'
-import AdminLayout from '@/layouts/AdminLayout.vue'
+import { useAuthStore } from './stores/authStore'
+import { onMounted } from 'vue'
 
-const route = useRoute()
+import GuestLayout from './layouts/GuestLayout.vue'
+import UserLayout  from './layouts/UserLayout.vue'
+import AdminLayout from './layouts/AdminLayout.vue'
 
+const route     = useRoute()
+const authStore = useAuthStore()
+
+// Au démarrage : vérifier si une session est encore active côté Laravel
+onMounted(() => {
+  authStore.fetchUser()
+})
+
+// Choisir le layout selon route.meta.layout
+// 'admin'  → AdminLayout (sidebar pour Admin, Gestionnaire, RH)
+// 'user'   → UserLayout (layout utilisateur connecté simple)
+// 'guest'  → GuestLayout (navbar publique)
+// 'none'   → pas de layout (ex: page connexion plein écran)
 const currentLayout = computed(() => {
-  const layoutName = route.meta.layout || 'guest'
-  if (layoutName === 'none') return null
-  if (layoutName === 'user') return UserLayout
-  if (layoutName === 'admin') return AdminLayout
+  const layout = route.meta.layout || 'guest'
+  if (layout === 'none')  return null
+  if (layout === 'admin') return AdminLayout
+  if (layout === 'user')  return UserLayout
   return GuestLayout
 })
 </script>
 
 <template>
-  <component v-if="currentLayout" :is="currentLayout">
-    <RouterView />
-  </component>
+  <!--
+    Si layout = 'none' (ex: LoginView) → RouterView direct, pas de wrapper
+    Sinon → le composant layout choisi enveloppe la page via son propre <RouterView>
+  -->
+  <component v-if="currentLayout" :is="currentLayout" />
   <RouterView v-else />
-</template> -->
-<script setup>
-import { onMounted } from 'vue'
-import { useAuthStore } from './stores/authStore'
-import NavBar from './components/common/NavBar.vue'
-
-const authStore = useAuthStore()
-
-
-// Au démarrage de l'application, vérifier si l'utilisateur a encore une session active
-// Cela permet de rester connecté après un rechargement de page
-onMounted(() => {
-  authStore.fetchUser()
-})
-</script>
-
-<template>
-  <nav-bar />
-  <router-view />
 </template>

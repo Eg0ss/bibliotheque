@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\UserController;
 | Routes publiques
 |--------------------------------------------------------------------------
 */
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 
@@ -37,9 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // PUT    /api/admin/users/{id}    → modifier un user
         // DELETE /api/admin/users/{id}    → supprimer
         Route::apiResource('users', UserController::class);
-
-        // PATCH /api/admin/users/{id}/toggle-status → activer/désactiver
         Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+        Route::get('roles', [UserController::class, 'getRoles']);
     });
 
     /*
