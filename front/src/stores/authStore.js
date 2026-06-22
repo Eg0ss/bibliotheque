@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!user.value)
 
   // Le nom du rôle de l'utilisateur connecté (ex: 'admin', 'user', 'gestionnaire')
-  const userRole = computed(() => user.value?.role?.name ?? null)
+  const userRole = computed(() => user.value?.role?.slug ?? null)
 
   // ─── Actions ─────────────────────────────────────────────
 
