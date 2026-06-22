@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;  // ← on l'utilise maintenant
 use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
@@ -35,75 +36,122 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        // Les données sont déjà validées par StoreUserRequest
-        // $request->validated() retourne uniquement les champs validés (sécurité)
         $user = User::create([
             'name'      => $request->validated()['name'],
             'email'     => $request->validated()['email'],
-            'password'  => $request->validated()['password'], // hashé auto via cast 'hashed'
+            'password'  => $request->validated()['password'],
             'role_id'   => $request->validated()['role_id'],
-            'is_active' => true, // actif par défaut à la création
+            'is_active' => true,
         ]);
 
-        // On recharge avec le rôle pour la réponse JSON complète
         $user->load('role');
 
         return response()->json([
             'message' => 'Compte créé avec succès.',
             'user'    => new UserResource($user),
-        ], 201); // 201 = Created
+        ], 201);
     }
 
     /**
      * VOIR un utilisateur précis
-     * Route : GET /api/admin/users/{id}
+     * Route : GET /api/admin/users/{user}
+     * Utilisé par UserShowView.vue au chargement de la page
      */
-    public function show(string $id)
+    public function show(string $user)
     {
         // findOrFail lance automatiquement une erreur 404 si l'id n'existe pas
-        $user = User::with('role')->findOrFail($id);
+        $foundUser = User::with('role')->findOrFail($user);
 
-        return new UserResource($user);
+        return new UserResource($foundUser);
     }
 
     /**
      * MODIFIER un compte utilisateur
-     * Route : PUT /api/admin/users/{id}
-     * (On implémentera cette méthode à la prochaine étape)
+     * Route : PUT /api/admin/users/{user}
+     * Utilisé par le formulaire dans UserShowView.vue
+     *
+     * UpdateUserRequest valide automatiquement les données AVANT d'entrer ici
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateUserRequest $request, string $user)
     {
-        // À implémenter
+        // On récupère le user (404 automatique si inexistant)
+        $foundUser = User::findOrFail($user);
+
+        // On prépare les données à mettre à jour
+        // array_filter supprime les valeurs null/vides pour ne pas écraser inutilement
+        $data = [
+            'name'    => $request->validated()['name'],
+            'email'   => $request->validated()['email'],
+            'role_id' => $request->validated()['role_id'],
+        ];
+
+        // Le mot de passe est optionnel : on ne le met à jour que s'il est fourni
+        if (!empty($request->validated()['password'])) {
+            $data['password'] = $request->validated()['password'];
+            // Pas besoin de hasher manuellement : le cast 'hashed' dans User.php s'en charge
+        }
+
+        // Mise à jour en base de données
+        $foundUser->update($data);
+
+        // On recharge les relations pour la réponse JSON
+        $foundUser->load('role');
+
+        return response()->json([
+            'message' => 'Compte modifié avec succès.',
+            'user'    => new UserResource($foundUser),
+        ]);
     }
 
     /**
      * ACTIVER / DÉSACTIVER un compte
      * Route : PATCH /api/admin/users/{id}/toggle-status
-     * (On implémentera cette méthode à la prochaine étape)
+     * Le "toggle" inverse simplement la valeur actuelle de is_active
      */
     public function toggleStatus(string $id)
     {
-        // À implémenter
+        $user = User::findOrFail($id);
+
+        // ! inverse le booléen : true → false, false → true
+        $user->update(['is_active' => !$user->is_active]);
+
+        $statusLabel = $user->is_active ? 'activé' : 'désactivé';
+
+        return response()->json([
+            'message'   => "Compte {$statusLabel} avec succès.",
+            'is_active' => $user->is_active,
+        ]);
     }
 
     /**
      * SUPPRIMER un compte
      * Route : DELETE /api/admin/users/{id}
-     * (On implémentera cette méthode à la prochaine étape)
      */
     public function destroy(string $id)
     {
-        // À implémenter
+        $user = User::findOrFail($id);
+
+        // Sécurité : on empêche un admin de se supprimer lui-même
+        if ($user->id === auth()->id()) {
+            return response()->json([
+                'message' => 'Vous ne pouvez pas supprimer votre propre compte.',
+            ], 403); // 403 = Forbidden
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Compte supprimé avec succès.',
+        ]);
     }
 
     /**
      * LISTER les rôles disponibles
      * Route : GET /api/admin/roles
-     * Utilisé par le <select> du formulaire UserCreateView.vue
+     * Utilisé par le <select> des formulaires
      */
     public function getRoles()
     {
-        // On retourne tous les rôles, format simple { id, name, slug }
         $roles = Role::orderBy('name')->get(['id', 'name', 'slug']);
 
         return response()->json([

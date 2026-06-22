@@ -1,45 +1,73 @@
 // src/stores/userStore.js
+// Ce store est le "cerveau" de la gestion des utilisateurs côté Vue
+// Il centralise toutes les actions (fetch, create, update, delete)
+// et les états (loading, errors, liste des users)
+
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import userApi from '../api/userApi'
 import router from '../router'
-
-// Import du composable PrimeVue Toast
 import { useToast } from 'primevue/usetoast'
 
 export const useUserStore = defineStore('user', () => {
 
-  // ─── État ─────────────────────────────────────────────
-  const users      = ref([])
-  const pagination = ref(null)
-  const roles      = ref([])
-  const loading    = ref(false)
-  const errors     = ref({})
+  // ─── État ─────────────────────────────────────────────────────────────────
+  const users         = ref([])        // liste des utilisateurs affichée dans le tableau
+  const currentUser   = ref(null)      // utilisateur en cours de visualisation/modification
+  const pagination    = ref(null)      // infos de pagination (page courante, total, etc.)
+  const roles         = ref([])        // liste des rôles pour les <select>
+  const loading       = ref(false)     // true pendant un appel API → désactive les boutons
+  const errors        = ref({})        // erreurs de validation renvoyées par Laravel
 
-  // useToast() donne accès au service Toast initialisé dans main.js
+  // useToast() est le service de notifications PrimeVue
+  // Il affiche des petites boîtes en bas/coin de l'écran
   const toast = useToast()
 
-  // ─── Actions ──────────────────────────────────────────
-
+  // ─── RÉCUPÉRER LA LISTE DES UTILISATEURS ─────────────────────────────────
   async function fetchUsers(page = 1) {
     loading.value = true
     try {
       const response   = await userApi.getAll(page)
+      // Laravel renvoie { data: [...], meta: { current_page, last_page, ... } }
       users.value      = response.data.data
       pagination.value = response.data.meta
     } catch (error) {
-      // Toast d'erreur si le chargement échoue
       toast.add({
         severity : 'error',
         summary  : 'Erreur',
         detail   : 'Impossible de charger la liste des utilisateurs.',
-        life     : 4000, // disparaît après 4 secondes
+        life     : 4000,
       })
+    } finally {
+      // finally s'exécute toujours (succès ou erreur) → on arrête le chargement
+      loading.value = false
+    }
+  }
+
+  // ─── RÉCUPÉRER UN SEUL UTILISATEUR ───────────────────────────────────────
+  // Appelé quand on arrive sur la page de détail /admin/utilisateurs/:id
+  async function fetchUser(id) {
+    loading.value   = true
+    currentUser.value = null // on vide d'abord pour éviter d'afficher un ancien user
+    try {
+      const response    = await userApi.getOne(id)
+      // Laravel via UserResource renvoie { data: { id, name, email, role, ... } }
+      currentUser.value = response.data.data
+    } catch (error) {
+      toast.add({
+        severity : 'error',
+        summary  : 'Introuvable',
+        detail   : 'Cet utilisateur n\'existe pas ou a été supprimé.',
+        life     : 4000,
+      })
+      // On redirige vers la liste si le user n'existe pas
+      router.push('/admin/utilisateurs')
     } finally {
       loading.value = false
     }
   }
 
+  // ─── RÉCUPÉRER LES RÔLES (pour les <select> dans les formulaires) ─────────
   async function fetchRoles() {
     try {
       const response = await userApi.getRoles()
@@ -54,13 +82,13 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // ─── CRÉER UN UTILISATEUR ────────────────────────────────────────────────
   async function createUser(formData) {
     loading.value = true
     errors.value  = {}
     try {
       await userApi.create(formData)
 
-      // Toast de succès
       toast.add({
         severity : 'success',
         summary  : 'Compte créé',
@@ -68,15 +96,12 @@ export const useUserStore = defineStore('user', () => {
         life     : 4000,
       })
 
-      // Redirection vers la liste
       router.push('/admin/utilisateurs')
 
     } catch (error) {
       if (error.response?.status === 422) {
-        // Erreurs de validation → affichées champ par champ dans le formulaire
+        // 422 = erreur de validation Laravel → on affiche les erreurs champ par champ
         errors.value = error.response.data.errors
-
-        // Toast d'avertissement général
         toast.add({
           severity : 'warn',
           summary  : 'Formulaire invalide',
@@ -84,7 +109,6 @@ export const useUserStore = defineStore('user', () => {
           life     : 4000,
         })
       } else {
-        // Toast d'erreur serveur
         toast.add({
           severity : 'error',
           summary  : 'Erreur serveur',
@@ -98,8 +122,113 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // ─── MODIFIER UN UTILISATEUR ─────────────────────────────────────────────
+  async function updateUser(id, formData) {
+    loading.value = true
+    errors.value  = {}
+    try {
+      const response = await userApi.update(id, formData)
+
+      // On met à jour currentUser avec les nouvelles données reçues du serveur
+      // (plus fiable que de mettre à jour manuellement le state local)
+      currentUser.value = response.data.user
+
+      toast.add({
+        severity : 'success',
+        summary  : 'Modifications enregistrées',
+        detail   : 'Le compte a été mis à jour avec succès.',
+        life     : 4000,
+      })
+
+    } catch (error) {
+      if (error.response?.status === 422) {
+        errors.value = error.response.data.errors
+        toast.add({
+          severity : 'warn',
+          summary  : 'Formulaire invalide',
+          detail   : 'Veuillez corriger les erreurs dans le formulaire.',
+          life     : 4000,
+        })
+      } else {
+        toast.add({
+          severity : 'error',
+          summary  : 'Erreur serveur',
+          detail   : 'Une erreur est survenue. Veuillez réessayer.',
+          life     : 5000,
+        })
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ─── ACTIVER / DÉSACTIVER UN UTILISATEUR ─────────────────────────────────
+  async function toggleUserStatus(id) {
+    try {
+      const response = await userApi.toggleStatus(id)
+
+      // On met à jour is_active dans currentUser sans recharger toute la page
+      if (currentUser.value) {
+        currentUser.value.is_active = response.data.is_active
+      }
+
+      // On met aussi à jour dans la liste si elle est chargée
+      const userInList = users.value.find(u => u.id === id)
+      if (userInList) {
+        userInList.is_active = response.data.is_active
+      }
+
+      toast.add({
+        severity : 'success',
+        summary  : 'Statut mis à jour',
+        detail   : response.data.message,
+        life     : 3000,
+      })
+
+    } catch (error) {
+      toast.add({
+        severity : 'error',
+        summary  : 'Erreur',
+        detail   : 'Impossible de modifier le statut.',
+        life     : 4000,
+      })
+    }
+  }
+
+  // ─── SUPPRIMER UN UTILISATEUR ─────────────────────────────────────────────
+  async function deleteUser(id) {
+    try {
+      await userApi.remove(id)
+
+      toast.add({
+        severity : 'success',
+        summary  : 'Compte supprimé',
+        detail   : 'Le compte utilisateur a été supprimé.',
+        life     : 4000,
+      })
+
+      // Après suppression, on retourne à la liste
+      router.push('/admin/utilisateurs')
+
+    } catch (error) {
+      // 403 = tentative de se supprimer soi-même
+      const detail = error.response?.status === 403
+        ? error.response.data.message
+        : 'Impossible de supprimer ce compte.'
+
+      toast.add({
+        severity : 'error',
+        summary  : 'Suppression impossible',
+        detail   : detail,
+        life     : 5000,
+      })
+    }
+  }
+
+  // ─── On expose tout ce dont les composants Vue ont besoin ─────────────────
   return {
-    users, pagination, roles, loading, errors,
-    fetchUsers, fetchRoles, createUser,
+    users, currentUser, pagination, roles, loading, errors,
+    fetchUsers, fetchUser, fetchRoles,
+    createUser, updateUser, toggleUserStatus, deleteUser,
   }
 })
