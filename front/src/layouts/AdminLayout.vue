@@ -13,27 +13,27 @@ const sidebarItems = computed(() => {
   if (role === 'admin') {
     return [
       // Icône + libellé + chemin pour chaque entrée de menu
-      { to: '/admin',                    label: 'Tableau de bord',    icon: '🏠' },
-      { to: '/admin/utilisateurs',       label: 'Utilisateurs',       icon: '👥' },
-      { to: '/admin/publication',        label: 'Publications',        icon: '📚' },
-      { to: '/admin/assignation',        label: 'Assignations',        icon: '📋' },
-      { to: '/admin/decision',           label: 'Décisions finales',   icon: '✅' },
+      { to: '/admin',                    label: 'Tableau de bord',    icon: '' },
+      { to: '/admin/utilisateurs',       label: 'Utilisateurs',       icon: '' },
+      { to: '/admin/publication',        label: 'Publications',        icon: '' },
+      { to: '/admin/assignation',        label: 'Assignations',        icon: '' },
+      { to: '/admin/decision',           label: 'Décisions finales',   icon: '' },
     ]
   }
 
   if (role === 'gestionnaire') {
     return [
-      { to: '/gestionnaire',             label: 'Tableau de bord',    icon: '🏠' },
-      { to: '/gestionnaire/documents',   label: 'Documents à vérifier', icon: '📄' },
-      { to: '/gestionnaire/parametres',  label: 'Paramètres de validation', icon: '⚙️' },
+      { to: '/gestionnaire',             label: 'Tableau de bord',    icon: '' },
+      { to: '/gestionnaire/documents',   label: 'Documents à vérifier', icon: '' },
+      { to: '/gestionnaire/parametres',  label: 'Paramètres de validation', icon: '' },
     ]
   }
 
   if (role === 'rh') {
     return [
-      { to: '/rh',                       label: 'Tableau de bord',    icon: '🏠' },
-      { to: '/rh/utilisateurs',          label: 'Utilisateurs',       icon: '👥' },
-      { to: '/rh/historique',            label: 'Historique',          icon: '📜' },
+      { to: '/rh',                       label: 'Tableau de bord',    icon: '' },
+      { to: '/rh/utilisateurs',          label: 'Utilisateurs',       icon: '' },
+      { to: '/rh/historique',            label: 'Historique',          icon: '' },
     ]
   }
 
@@ -55,7 +55,7 @@ async function handleLogout() {
       <!-- Logo / Titre -->
       <div class="p-5 border-b border-white/20">
         <h1 class="text-base font-bold tracking-wide uppercase text-white/90">
-          📖 Bibliothèque
+           Bibliothèque
         </h1>
         <p class="text-xs text-white/50 mt-1">Espace administration</p>
       </div>
@@ -90,7 +90,7 @@ async function handleLogout() {
           @click="handleLogout"
           class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/70 hover:bg-red-600/30 hover:text-white transition-all"
         >
-          <span>🚪</span> Déconnexion
+          <span></span> Déconnexion
         </button>
       </div>
     </aside>

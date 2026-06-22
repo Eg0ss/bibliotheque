@@ -8,7 +8,6 @@ import authApi from '../api/authApi'
 import router from '../router'
 
 export const useAuthStore = defineStore('auth', () => {
-
   // ─── État ───────────────────────────────────────────────
   // L'utilisateur connecté (null si personne n'est connecté)
   const user = ref(null)
@@ -34,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function register(formData) {
     loading.value = true
-    errors.value  = {}
+    errors.value = {}
     try {
       // 1. Obtenir le cookie CSRF (obligatoire avant tout POST avec Sanctum)
       await authApi.getCsrfCookie()
@@ -47,7 +46,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       // 4. Rediriger vers la page d'accueil de l'espace utilisateur
       router.push('/mon-espace/depots')
-
     } catch (error) {
       // Laravel renvoie les erreurs de validation dans error.response.data.errors
       if (error.response?.status === 422) {
@@ -60,13 +58,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * Connexion
-   * @param {Object} credentials - { email, password }
-   */
+  //connexion
   async function login(credentials) {
     loading.value = true
-    errors.value  = {}
+    errors.value = {}
     try {
       // 1. Cookie CSRF obligatoire avant le POST /login
       await authApi.getCsrfCookie()
@@ -79,8 +74,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       // 4. Rediriger selon le rôle
       redirectAfterLogin()
-
     } catch (error) {
+      console.log('ERREUR LOGIN :', error.response?.data)
       if (error.response?.status === 422) {
         errors.value = error.response.data.errors
       } else {
@@ -108,12 +103,14 @@ export const useAuthStore = defineStore('auth', () => {
    * Vérifier si l'utilisateur est encore connecté (appelé au rechargement de page)
    * Si la session est encore valide côté Laravel, on récupère l'utilisateur
    */
+
   async function fetchUser() {
     try {
       const response = await authApi.me()
+      console.log('REPONSE ME :', response.data)
       user.value = response.data.user
-    } catch {
-      // 401 = session expirée ou inexistante : l'utilisateur n'est pas connecté
+    } catch (error) {
+      console.log('ERREUR ME (status) :', error.response?.status)
       user.value = null
     }
   }
@@ -123,15 +120,21 @@ export const useAuthStore = defineStore('auth', () => {
    */
   function redirectAfterLogin() {
     const role = userRole.value
-    if (role === 'admin')        router.push('/admin')
+    if (role === 'admin') router.push('/admin')
     else if (role === 'gestionnaire') router.push('/gestionnaire')
-    else if (role === 'rh')      router.push('/rh')
-    else                         router.push('/mon-espace/depots')
+    else if (role === 'rh') router.push('/rh')
+    else router.push('/mon-espace/depots')
   }
 
   return {
-    user, loading, errors,
-    isAuthenticated, userRole,
-    register, login, logout, fetchUser,
+    user,
+    loading,
+    errors,
+    isAuthenticated,
+    userRole,
+    register,
+    login,
+    logout,
+    fetchUser,
   }
 })

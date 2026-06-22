@@ -192,33 +192,63 @@ const router = createRouter({
 })
 
 // ── Guard de navigation global ──────────────────────────────
-router.beforeEach(async (to, from, next) => {
+// router.beforeEach(async (to, from, next) => {
+//   const authStore = useAuthStore()
+
+//   if (to.meta.requiresAuth) {
+
+//     // Rechargement de page : on ne connaît pas encore l'état de session
+//     if (!authStore.isAuthenticated) {
+//       await authStore.fetchUser()
+//     }
+
+//     // Toujours pas connecté → page de connexion
+//     if (!authStore.isAuthenticated) {
+//       return next('/connexion')
+//     }
+
+//     // Connecté mais mauvais rôle → retour accueil
+//     if (to.meta.role && authStore.userRole !== to.meta.role) {
+//       return next('/')
+//     }
+//   }
+
+//   // Déjà connecté : bloquer l'accès à /connexion et /inscription
+//   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
+//     return next('/')
+//   }
+
+//   next()
+// })
+// ── Guard de navigation global ──────────────────────────────
+// Nouvelle syntaxe Vue Router 4 : on RETOURNE la valeur au lieu d'appeler next()
+
+router.beforeEach(async (to, from) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth) {
 
-    // Rechargement de page : on ne connaît pas encore l'état de session
+    // Rechargement de page : session inconnue → on demande à Laravel
     if (!authStore.isAuthenticated) {
       await authStore.fetchUser()
     }
 
-    // Toujours pas connecté → page de connexion
+    // Toujours pas connecté → rediriger vers /connexion
     if (!authStore.isAuthenticated) {
-      return next('/connexion')
+      return '/connexion'  // ← plus de next(), on retourne directement
     }
 
     // Connecté mais mauvais rôle → retour accueil
     if (to.meta.role && authStore.userRole !== to.meta.role) {
-      return next('/')
+      return '/'
     }
   }
 
-  // Déjà connecté : bloquer l'accès à /connexion et /inscription
+  // Déjà connecté : bloquer /connexion et /inscription
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
-    return next('/')
+    return '/'
   }
 
-  next()
 })
 
 export default router
