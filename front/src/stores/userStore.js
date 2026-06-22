@@ -1,74 +1,96 @@
 // src/stores/userStore.js
-// Gère l'état de la liste des utilisateurs et les actions CRUD
-
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import userApi from '../api/userApi'
 import router from '../router'
 
+// Import du composable PrimeVue Toast
+import { useToast } from 'primevue/usetoast'
+
 export const useUserStore = defineStore('user', () => {
 
   // ─── État ─────────────────────────────────────────────
-  const users      = ref([])       // tableau des utilisateurs de la page courante
-  const pagination = ref(null)     // infos de pagination retournées par Laravel
-  const roles      = ref([])       // liste des rôles pour le formulaire
+  const users      = ref([])
+  const pagination = ref(null)
+  const roles      = ref([])
   const loading    = ref(false)
   const errors     = ref({})
-  const success    = ref('')       // message de succès après une action
+
+  // useToast() donne accès au service Toast initialisé dans main.js
+  const toast = useToast()
 
   // ─── Actions ──────────────────────────────────────────
 
-  /**
-   * Charger la liste des utilisateurs (page donnée)
-   */
   async function fetchUsers(page = 1) {
     loading.value = true
     try {
-      const response = await userApi.getAll(page)
-
-      // Laravel paginate() retourne { data: [...], meta: { current_page, last_page... } }
+      const response   = await userApi.getAll(page)
       users.value      = response.data.data
       pagination.value = response.data.meta
     } catch (error) {
-      console.error('Erreur chargement utilisateurs', error)
+      // Toast d'erreur si le chargement échoue
+      toast.add({
+        severity : 'error',
+        summary  : 'Erreur',
+        detail   : 'Impossible de charger la liste des utilisateurs.',
+        life     : 4000, // disparaît après 4 secondes
+      })
     } finally {
       loading.value = false
     }
   }
 
-  /**
-   * Charger la liste des rôles (pour le <select> du formulaire de création)
-   */
   async function fetchRoles() {
     try {
       const response = await userApi.getRoles()
-      roles.value = response.data.data
+      roles.value    = response.data.data
     } catch (error) {
-      console.error('Erreur chargement rôles', error)
+      toast.add({
+        severity : 'warn',
+        summary  : 'Attention',
+        detail   : 'Impossible de charger les rôles.',
+        life     : 3000,
+      })
     }
   }
 
-  /**
-   * Créer un nouvel utilisateur
-   * @param {Object} formData - données du formulaire
-   */
   async function createUser(formData) {
     loading.value = true
     errors.value  = {}
-    success.value = ''
     try {
       await userApi.create(formData)
 
-      success.value = 'Compte créé avec succès.'
+      // Toast de succès
+      toast.add({
+        severity : 'success',
+        summary  : 'Compte créé',
+        detail   : 'Le compte utilisateur a été créé avec succès.',
+        life     : 4000,
+      })
 
-      // Rediriger vers la liste après création
+      // Redirection vers la liste
       router.push('/admin/utilisateurs')
 
     } catch (error) {
       if (error.response?.status === 422) {
-        // Erreurs de validation Laravel : on les affiche champ par champ
+        // Erreurs de validation → affichées champ par champ dans le formulaire
         errors.value = error.response.data.errors
+
+        // Toast d'avertissement général
+        toast.add({
+          severity : 'warn',
+          summary  : 'Formulaire invalide',
+          detail   : 'Veuillez corriger les erreurs dans le formulaire.',
+          life     : 4000,
+        })
       } else {
+        // Toast d'erreur serveur
+        toast.add({
+          severity : 'error',
+          summary  : 'Erreur serveur',
+          detail   : 'Une erreur est survenue. Veuillez réessayer.',
+          life     : 5000,
+        })
         errors.value = { general: ['Une erreur est survenue.'] }
       }
     } finally {
@@ -77,7 +99,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   return {
-    users, pagination, roles, loading, errors, success,
+    users, pagination, roles, loading, errors,
     fetchUsers, fetchRoles, createUser,
   }
 })

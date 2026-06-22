@@ -7,6 +7,7 @@ import { onMounted } from 'vue'
 import GuestLayout from './layouts/GuestLayout.vue'
 import UserLayout  from './layouts/UserLayout.vue'
 import AdminLayout from './layouts/AdminLayout.vue'
+import Toast from 'primevue/toast'
 
 const route     = useRoute()
 const authStore = useAuthStore()
@@ -35,6 +36,7 @@ const currentLayout = computed(() => {
     Si layout = 'none' (ex: LoginView) → RouterView direct, pas de wrapper
     Sinon → le composant layout choisi enveloppe la page via son propre <RouterView>
   -->
+      <Toast position="top-right" />
   <component v-if="currentLayout" :is="currentLayout" />
   <RouterView v-else />
 </template>

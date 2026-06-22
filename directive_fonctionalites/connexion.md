@@ -1,7 +1,7 @@
 ├── .env
 │   └── Fichier de configuration de l'environnement.
 │       On y déclare le domaine du front Vue (SANCTUM_STATEFUL_DOMAINS),
-│       le driver de session (SESSION_DRIVER=cookie) et l'URL du front
+│       le driver de session (SESSION_DRIVER=database) et l'URL du front
 │       (FRONTEND_URL). Sans ces valeurs, Sanctum ne sait pas que les
 │       requêtes venant de Vue.js sont légitimes.
 │
