@@ -12,43 +12,38 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    /**
-     * LISTER tous les utilisateurs
-     * Route : GET /api/admin/users
-     * Utilisé par la page UsersListView.vue
-     */
-    public function index(request $request)
-    {
-        // On charge les utilisateurs avec leur rôle 
-        $users = User::with('role')
-            ->orderBy('created_at', 'desc');
-           
-        // ── Filtre par nom ou email ──────────────────────────────────────────
-        // $request->search = ce que l'utilisateur a tapé dans la barre de recherche
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('email', 'LIKE', "%{$search}%");
-            });
-        }
+   /**
+ * LISTER les utilisateurs avec recherche et filtres
+ * Route : GET /api/admin/users?search=jean&status=1&role_id=2&page=1
+ */
+public function index(Request $request)
+{
+    $query = User::with('role')
+        ->orderBy('created_at', 'desc');
 
-        // ── Filtre par statut (actif = 1 / inactif = 0) ──────────────────────
-
-        if ($request->has('status') && $request->status !== '') {
-            $query->where('is_active', (bool) $request->status);
-        }
-
-        // ── Filtre par rôle ───────────────────────────────────────────────────
-        if ($request->filled('role_id')) {
-            $query->where('role_id', $request->role_id);
-        }
-
-        $users = $query->paginate(15)->appends($request->query());
-
-        // UserResource::collection formate chaque user via UserResource
-        return UserResource::collection($users);
+    // Recherche par nom ou email
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'LIKE', "%{$search}%")
+              ->orWhere('email', 'LIKE', "%{$search}%");
+        });
     }
+
+    // Filtre par statut actif/inactif
+    if ($request->has('status') && $request->status !== '') {
+        $query->where('is_active', (bool) $request->status);
+    }
+
+    // Filtre par rôle
+    if ($request->filled('role_id')) {
+        $query->where('role_id', $request->role_id);
+    }
+
+    $users = $query->paginate(15)->appends($request->query());
+
+    return UserResource::collection($users);
+}
 
     /**
      * CRÉER un nouveau compte utilisateur

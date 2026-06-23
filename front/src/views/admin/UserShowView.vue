@@ -138,7 +138,7 @@ function handleDelete() {
           <!-- Modifier : affiche/cache le formulaire -->
           <button @click="showEditForm = !showEditForm"
             class="px-4 py-2 text-sm font-medium rounded-lg border border-[#042C53] text-[#042C53] hover:bg-[#042C53] hover:text-white transition">
-            {{ showEditForm ? 'Annuler la modification' : '✏️ Modifier' }}
+            {{ showEditForm ? 'Annuler la modification' : 'Modifier' }}
           </button>
 
           <!-- Activer / Désactiver — masqué si c'est son propre compte -->
