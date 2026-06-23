@@ -17,13 +17,34 @@ class UserController extends Controller
      * Route : GET /api/admin/users
      * Utilisé par la page UsersListView.vue
      */
-    public function index()
+    public function index(request $request)
     {
-        // On charge les utilisateurs avec leur rôle (eager loading)
-        // paginate(15) = 15 par page, Laravel génère les infos de pagination automatiquement
+        // On charge les utilisateurs avec leur rôle 
         $users = User::with('role')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->orderBy('created_at', 'desc');
+           
+        // ── Filtre par nom ou email ──────────────────────────────────────────
+        // $request->search = ce que l'utilisateur a tapé dans la barre de recherche
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // ── Filtre par statut (actif = 1 / inactif = 0) ──────────────────────
+
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('is_active', (bool) $request->status);
+        }
+
+        // ── Filtre par rôle ───────────────────────────────────────────────────
+        if ($request->filled('role_id')) {
+            $query->where('role_id', $request->role_id);
+        }
+
+        $users = $query->paginate(15)->appends($request->query());
 
         // UserResource::collection formate chaque user via UserResource
         return UserResource::collection($users);
@@ -109,25 +130,25 @@ class UserController extends Controller
      * Le "toggle" inverse simplement la valeur actuelle de is_active
      */
     public function toggleStatus(string $id)
-{
-    $user = User::findOrFail($id);
+    {
+        $user = User::findOrFail($id);
 
-    // Sécurité : un admin ne peut pas désactiver son propre compte
-    if ((int)$id === auth()->id()) {
+        // Sécurité : un admin ne peut pas désactiver son propre compte
+        if ((int)$id === auth()->id()) {
+            return response()->json([
+                'message' => 'Vous ne pouvez pas modifier le statut de votre propre compte.',
+            ], 403);
+        }
+
+        $user->update(['is_active' => !$user->is_active]);
+
+        $statusLabel = $user->is_active ? 'activé' : 'désactivé';
+
         return response()->json([
-            'message' => 'Vous ne pouvez pas modifier le statut de votre propre compte.',
-        ], 403);
+            'message'   => "Compte {$statusLabel} avec succès.",
+            'is_active' => $user->is_active,
+        ]);
     }
-
-    $user->update(['is_active' => !$user->is_active]);
-
-    $statusLabel = $user->is_active ? 'activé' : 'désactivé';
-
-    return response()->json([
-        'message'   => "Compte {$statusLabel} avec succès.",
-        'is_active' => $user->is_active,
-    ]);
-}
 
     /**
      * SUPPRIMER un compte

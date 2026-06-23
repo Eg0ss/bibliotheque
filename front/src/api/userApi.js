@@ -6,12 +6,21 @@ import apiClient from './axios'
 const userApi = {
 
   /**
-   * Récupérer la liste paginée des utilisateurs
-   * @param {number} page - numéro de page (1 par défaut)
-   */
-  getAll(page = 1) {
-    return apiClient.get(`/api/admin/users?page=${page}`)
-  },
+ * Récupérer la liste paginée des utilisateurs avec filtres optionnels
+ * @param {number} page      - numéro de page
+ * @param {Object} filters   - { search, status, role_id } — tous optionnels
+ *
+ * Axios sérialise automatiquement l'objet params en query string :
+ * /api/admin/users?page=1&search=jean&status=1&role_id=2
+ */
+getAll(page = 1, filters = {}) {
+  return apiClient.get('/api/admin/users', {
+    params: {
+      page,
+      ...filters,   // on étale les filtres dans les paramètres
+    }
+  })
+},
 
   /**
    * Récupérer un utilisateur par son id

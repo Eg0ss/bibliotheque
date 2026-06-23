@@ -18,31 +18,47 @@ export const useUserStore = defineStore('user', () => {
   const roles         = ref([])        // liste des rôles pour les <select>
   const loading       = ref(false)     // true pendant un appel API → désactive les boutons
   const errors        = ref({})        // erreurs de validation renvoyées par Laravel
-
-  // useToast() est le service de notifications PrimeVue
-  // Il affiche des petites boîtes en bas/coin de l'écran
-  const toast = useToast()
+  const toast = useToast()             //service notification
+  const filters = ref({
+  search  : '',   // texte tapé dans la barre de recherche
+  status  : '',   // '' = tous | '1' = actifs | '0' = inactifs
+  role_id : '',   // '' = tous les rôles | sinon l'id du rôle
+})
 
   // ─── RÉCUPÉRER LA LISTE DES UTILISATEURS ─────────────────────────────────
-  async function fetchUsers(page = 1) {
-    loading.value = true
-    try {
-      const response   = await userApi.getAll(page)
-      // Laravel renvoie { data: [...], meta: { current_page, last_page, ... } }
-      users.value      = response.data.data
-      pagination.value = response.data.meta
-    } catch (error) {
-      toast.add({
-        severity : 'error',
-        summary  : 'Erreur',
-        detail   : 'Impossible de charger la liste des utilisateurs.',
-        life     : 4000,
-      })
-    } finally {
-      // finally s'exécute toujours (succès ou erreur) → on arrête le chargement
-      loading.value = false
-    }
+  /**
+ * Charger les utilisateurs en passant les filtres actifs à l'API
+ */
+async function fetchUsers(page = 1) {
+  loading.value = true
+  try {
+    // On nettoie les filtres : on retire les clés dont la valeur est vide ''
+    const activeFilters = Object.fromEntries(
+      Object.entries(filters.value).filter(([, v]) => v !== '')
+    )
+
+    const response   = await userApi.getAll(page, activeFilters)
+    users.value      = response.data.data
+    pagination.value = response.data.meta
+  } catch (error) {
+    toast.add({
+      severity : 'error',
+      summary  : 'Erreur',
+      detail   : 'Impossible de charger la liste des utilisateurs.',
+      life     : 4000,
+    })
+  } finally {
+    loading.value = false
   }
+}
+
+/**
+ * Réinitialiser tous les filtres et recharger la liste
+ */
+function resetFilters() {
+  filters.value = { search: '', status: '', role_id: '' }
+  fetchUsers(1)
+}
 
   // ─── RÉCUPÉRER UN SEUL UTILISATEUR ───────────────────────────────────────
   // Appelé quand on arrive sur la page de détail /admin/utilisateurs/:id
@@ -229,8 +245,8 @@ export const useUserStore = defineStore('user', () => {
 
   // ─── On expose tout ce dont les composants Vue ont besoin ─────────────────
   return {
-    users, currentUser, pagination, roles, loading, errors,
-    fetchUsers, fetchUser, fetchRoles,
+    users, currentUser, pagination, roles,filters, loading, errors,
+    fetchUsers, fetchUser, fetchRoles, resetFilters,
     createUser, updateUser, toggleUserStatus, deleteUser,
   }
 })
