@@ -11,6 +11,7 @@ const form = reactive({
   password             : '',
   password_confirmation: '',
   role_id              : '',
+  is_active            : false,
 })
 
 onMounted(() => {
@@ -35,6 +36,7 @@ function handleSubmit() {
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <form @submit.prevent="handleSubmit" class="space-y-5">
 
+        <!-- Nom -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
           <input v-model="form.name" type="text" required placeholder="Ex : Jean Dupont"
@@ -44,6 +46,7 @@ function handleSubmit() {
           </p>
         </div>
 
+        <!-- Email -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Adresse e-mail</label>
           <input v-model="form.email" type="email" required placeholder="jean.dupont@exemple.bj"
@@ -53,6 +56,7 @@ function handleSubmit() {
           </p>
         </div>
 
+        <!-- Rôle -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
           <select v-model="form.role_id" required
@@ -67,6 +71,21 @@ function handleSubmit() {
           </p>
         </div>
 
+        <!-- Statut du compte — seulement l'admin peut choisir -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Statut du compte</label>
+          <select v-model="form.is_active"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white">
+            <!-- :value="true" et :value="false" pour envoyer un booléen réel et non une string -->
+            <option :value="true">Actif — peut se connecter immédiatement</option>
+            <option :value="false">Inactif — doit être activé avant connexion</option>
+          </select>
+          <p v-if="userStore.errors.is_active" class="text-red-500 text-xs mt-1">
+            {{ userStore.errors.is_active[0] }}
+          </p>
+        </div>
+
+        <!-- Mot de passe -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
           <input v-model="form.password" type="password" required placeholder="Minimum 8 caractères"
@@ -76,6 +95,7 @@ function handleSubmit() {
           </p>
         </div>
 
+        <!-- Confirmation mot de passe -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</label>
           <input v-model="form.password_confirmation" type="password" required placeholder="Répéter le mot de passe"

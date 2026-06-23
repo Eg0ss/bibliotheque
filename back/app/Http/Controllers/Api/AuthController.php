@@ -35,7 +35,7 @@ class AuthController extends Controller
             'email'    => $validated['email'],
             'password' => $validated['password'], // sera hashé automatiquement grâce au cast 'hashed'
             'role_id'  => $roleUser->id,
-            'is_active'=> true,
+            'is_active'=> false,
         ]);
 
         // 4. Connecter automatiquement l'utilisateur après inscription (session)

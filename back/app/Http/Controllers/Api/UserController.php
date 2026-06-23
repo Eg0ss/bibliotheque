@@ -57,7 +57,7 @@ public function index(Request $request)
             'email'     => $request->validated()['email'],
             'password'  => $request->validated()['password'],
             'role_id'   => $request->validated()['role_id'],
-            'is_active' => true,
+            'is_active' => $request->validated()['is_active'],
         ]);
 
         $user->load('role');
