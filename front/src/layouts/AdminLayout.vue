@@ -8,7 +8,7 @@ const router    = useRouter()
 
 // On calcule les items de menu selon le rôle de l'utilisateur connecté
 const sidebarItems = computed(() => {
-  const role = authStore.userRole // ← corrigé (était authStore.role)
+  const role = authStore.userRole // On récupère le rôle de l'utilisateur connecté
 
   if (role === 'admin') {
     return [

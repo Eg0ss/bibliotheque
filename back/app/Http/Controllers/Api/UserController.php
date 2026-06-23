@@ -109,19 +109,25 @@ class UserController extends Controller
      * Le "toggle" inverse simplement la valeur actuelle de is_active
      */
     public function toggleStatus(string $id)
-    {
-        $user = User::findOrFail($id);
+{
+    $user = User::findOrFail($id);
 
-        // ! inverse le booléen : true → false, false → true
-        $user->update(['is_active' => !$user->is_active]);
-
-        $statusLabel = $user->is_active ? 'activé' : 'désactivé';
-
+    // Sécurité : un admin ne peut pas désactiver son propre compte
+    if ((int)$id === auth()->id()) {
         return response()->json([
-            'message'   => "Compte {$statusLabel} avec succès.",
-            'is_active' => $user->is_active,
-        ]);
+            'message' => 'Vous ne pouvez pas modifier le statut de votre propre compte.',
+        ], 403);
     }
+
+    $user->update(['is_active' => !$user->is_active]);
+
+    $statusLabel = $user->is_active ? 'activé' : 'désactivé';
+
+    return response()->json([
+        'message'   => "Compte {$statusLabel} avec succès.",
+        'is_active' => $user->is_active,
+    ]);
+}
 
     /**
      * SUPPRIMER un compte

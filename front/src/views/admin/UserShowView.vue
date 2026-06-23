@@ -11,11 +11,11 @@
  */
 
 import { reactive, ref, watch, onMounted } from 'vue'
-import { useRoute, RouterLink }             from 'vue-router'
-import { useUserStore }                     from '@/stores/userStore'
+import { useRoute, RouterLink } from 'vue-router'
+import { useUserStore } from '@/stores/userStore'
 
 // useRoute() donne accès aux paramètres de l'URL (/admin/utilisateurs/:id)
-const route     = useRoute()
+const route = useRoute()
 const userStore = useUserStore()
 
 // Contrôle l'affichage du formulaire de modification
@@ -23,10 +23,10 @@ const showEditForm = ref(false)
 
 // Le formulaire de modification (reactive = chaque propriété est réactive)
 const form = reactive({
-  name                 : '',
-  email                : '',
-  role_id              : '',
-  password             : '',      // optionnel : vide = pas de changement
+  name: '',
+  email: '',
+  role_id: '',
+  password: '',      // optionnel : vide = pas de changement
   password_confirmation: '',
 })
 
@@ -46,8 +46,8 @@ onMounted(async () => {
 // watch surveille currentUser : dès qu'il change, on remplit le formulaire
 watch(() => userStore.currentUser, (user) => {
   if (user) {
-    form.name    = user.name
-    form.email   = user.email
+    form.name = user.name
+    form.email = user.email
     form.role_id = user.role?.id ?? ''
   }
 })
@@ -95,7 +95,8 @@ function handleDelete() {
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-4">
             <!-- Avatar : cercle avec la première lettre du nom -->
-            <div class="w-12 h-12 rounded-full bg-[#042C53] text-white flex items-center justify-center text-lg font-bold">
+            <div
+              class="w-12 h-12 rounded-full bg-[#042C53] text-white flex items-center justify-center text-lg font-bold">
               {{ userStore.currentUser.name?.charAt(0).toUpperCase() }}
             </div>
             <div>
@@ -105,11 +106,9 @@ function handleDelete() {
           </div>
 
           <!-- Badge statut actif/inactif -->
-          <span class="px-3 py-1 rounded-full text-xs font-medium"
-            :class="userStore.currentUser.is_active
-              ? 'bg-green-100 text-green-700'
-              : 'bg-red-100 text-red-700'"
-          >
+          <span class="px-3 py-1 rounded-full text-xs font-medium" :class="userStore.currentUser.is_active
+            ? 'bg-green-100 text-green-700'
+            : 'bg-red-100 text-red-700'">
             {{ userStore.currentUser.is_active ? 'Actif' : 'Inactif' }}
           </span>
         </div>
@@ -118,14 +117,12 @@ function handleDelete() {
         <div class="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p class="text-gray-500 mb-1">Rôle</p>
-            <span class="px-2 py-1 rounded-full text-xs font-medium"
-              :class="{
-                'bg-red-100 text-red-700'      : userStore.currentUser.role?.slug === 'admin',
-                'bg-blue-100 text-blue-700'    : userStore.currentUser.role?.slug === 'gestionnaire',
-                'bg-purple-100 text-purple-700': userStore.currentUser.role?.slug === 'rh',
-                'bg-gray-100 text-gray-700'    : userStore.currentUser.role?.slug === 'user',
-              }"
-            >
+            <span class="px-2 py-1 rounded-full text-xs font-medium" :class="{
+              'bg-red-100 text-red-700': userStore.currentUser.role?.slug === 'admin',
+              'bg-blue-100 text-blue-700': userStore.currentUser.role?.slug === 'gestionnaire',
+              'bg-purple-100 text-purple-700': userStore.currentUser.role?.slug === 'rh',
+              'bg-gray-100 text-gray-700': userStore.currentUser.role?.slug === 'user',
+            }">
               {{ userStore.currentUser.role?.name ?? '—' }}
             </span>
           </div>
@@ -139,31 +136,28 @@ function handleDelete() {
         <div class="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-100">
 
           <!-- Modifier : affiche/cache le formulaire -->
-          <button
-            @click="showEditForm = !showEditForm"
-            class="px-4 py-2 text-sm font-medium rounded-lg border border-[#042C53] text-[#042C53] hover:bg-[#042C53] hover:text-white transition"
-          >
+          <button @click="showEditForm = !showEditForm"
+            class="px-4 py-2 text-sm font-medium rounded-lg border border-[#042C53] text-[#042C53] hover:bg-[#042C53] hover:text-white transition">
             {{ showEditForm ? 'Annuler la modification' : '✏️ Modifier' }}
           </button>
 
-          <!-- Activer / Désactiver -->
-          <button
-            @click="handleToggleStatus"
-            :disabled="userStore.loading"
-            class="px-4 py-2 text-sm font-medium rounded-lg transition disabled:opacity-50"
-            :class="userStore.currentUser.is_active
+          <!-- Activer / Désactiver — masqué si c'est son propre compte -->
+          <button v-if="!isSelf" @click="handleToggleStatus" :disabled="userStore.loading"
+            class="px-4 py-2 text-sm font-medium rounded-lg transition disabled:opacity-50" :class="userStore.currentUser.is_active
               ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-              : 'bg-green-100 text-green-700 hover:bg-green-200'"
-          >
-            {{ userStore.currentUser.is_active ? '⏸ Désactiver' : '▶️ Activer' }}
+              : 'bg-green-100 text-green-700 hover:bg-green-200'">
+            {{ userStore.currentUser.is_active ? 'Désactiver' : ' Activer' }}
           </button>
 
+          <!-- Message affiché à la place si c'est son propre compte -->
+          <span v-else class="px-4 py-2 text-sm text-gray-400 italic">
+            Vous ne pouvez pas modifier votre propre statut
+          </span>
+
           <!-- Supprimer -->
-          <button
-            @click="showDeleteConfirm = true"
-            class="px-4 py-2 text-sm font-medium rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition"
-          >
-            🗑 Supprimer
+          <button @click="showDeleteConfirm = true"
+            class="px-4 py-2 text-sm font-medium rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
+            Supprimer
           </button>
         </div>
       </div>
@@ -177,12 +171,8 @@ function handleDelete() {
           <!-- Nom -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Nom complet</label>
-            <input
-              v-model="form.name"
-              type="text"
-              required
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C]"
-            />
+            <input v-model="form.name" type="text" required
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C]" />
             <!-- Affichage de l'erreur de validation Laravel si elle existe -->
             <p v-if="userStore.errors.name" class="text-red-500 text-xs mt-1">
               {{ userStore.errors.name[0] }}
@@ -192,12 +182,8 @@ function handleDelete() {
           <!-- Email -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Adresse e-mail</label>
-            <input
-              v-model="form.email"
-              type="email"
-              required
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C]"
-            />
+            <input v-model="form.email" type="email" required
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C]" />
             <p v-if="userStore.errors.email" class="text-red-500 text-xs mt-1">
               {{ userStore.errors.email[0] }}
             </p>
@@ -206,11 +192,8 @@ function handleDelete() {
           <!-- Rôle -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
-            <select
-              v-model="form.role_id"
-              required
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white"
-            >
+            <select v-model="form.role_id" required
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white">
               <option value="" disabled>— Sélectionner un rôle —</option>
               <!-- Les rôles sont chargés depuis userStore.roles (fetchRoles()) -->
               <option v-for="role in userStore.roles" :key="role.id" :value="role.id">
@@ -228,12 +211,8 @@ function handleDelete() {
               Nouveau mot de passe
               <span class="text-gray-400 font-normal">(laisser vide pour ne pas changer)</span>
             </label>
-            <input
-              v-model="form.password"
-              type="password"
-              placeholder="Minimum 8 caractères"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C]"
-            />
+            <input v-model="form.password" type="password" placeholder="Minimum 8 caractères"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C]" />
             <p v-if="userStore.errors.password" class="text-red-500 text-xs mt-1">
               {{ userStore.errors.password[0] }}
             </p>
@@ -242,21 +221,14 @@ function handleDelete() {
           <!-- Confirmation mot de passe (affichée seulement si on saisit un mdp) -->
           <div v-if="form.password">
             <label class="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</label>
-            <input
-              v-model="form.password_confirmation"
-              type="password"
-              placeholder="Répéter le nouveau mot de passe"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C]"
-            />
+            <input v-model="form.password_confirmation" type="password" placeholder="Répéter le nouveau mot de passe"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C]" />
           </div>
 
           <!-- Bouton soumettre -->
           <div class="pt-2">
-            <button
-              type="submit"
-              :disabled="userStore.loading"
-              class="w-full bg-[#042C53] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#0C447C] transition disabled:opacity-50"
-            >
+            <button type="submit" :disabled="userStore.loading"
+              class="w-full bg-[#042C53] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#0C447C] transition disabled:opacity-50">
               {{ userStore.loading ? 'Enregistrement...' : 'Enregistrer les modifications' }}
             </button>
           </div>
@@ -269,9 +241,7 @@ function handleDelete() {
         v-if contrôle la visibilité : quand showDeleteConfirm = true, le modal apparaît
         Le fond noir semi-transparent est obtenu avec fixed inset-0 bg-black/50
       -->
-      <div v-if="showDeleteConfirm"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      >
+      <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl">
           <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirmer la suppression</h3>
           <p class="text-sm text-gray-600 mb-6">
@@ -281,17 +251,13 @@ function handleDelete() {
           </p>
           <div class="flex gap-3">
             <!-- Annuler : ferme le modal -->
-            <button
-              @click="showDeleteConfirm = false"
-              class="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-            >
+            <button @click="showDeleteConfirm = false"
+              class="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition">
               Annuler
             </button>
             <!-- Confirmer : lance la suppression -->
-            <button
-              @click="handleDelete"
-              class="flex-1 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-            >
+            <button @click="handleDelete"
+              class="flex-1 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
               Oui, supprimer
             </button>
           </div>
