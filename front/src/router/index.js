@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 
 const routes = [
-
   // ─────────────────────────────────────────────────────────
   // ROUTES PUBLIQUES  →  layout: 'guest' (NavBar publique)
   // ─────────────────────────────────────────────────────────
@@ -11,25 +10,25 @@ const routes = [
     path: '/',
     name: 'home',
     component: () => import('../views/public/HomeView.vue'),
-    meta: { layout: 'guest' }
+    meta: { layout: 'guest' },
   },
   {
     path: '/catalogue',
     name: 'catalogue',
     component: () => import('../views/public/CatalogView.vue'),
-    meta: { layout: 'guest' }
+    meta: { layout: 'guest' },
   },
   {
     path: '/recherche',
     name: 'recherche',
     component: () => import('../views/public/SearchView.vue'),
-    meta: { layout: 'guest' }
+    meta: { layout: 'guest' },
   },
   {
     path: '/statistiques',
     name: 'statistiques',
     component: () => import('../views/public/StatisticsView.vue'),
-    meta: { layout: 'guest' }
+    meta: { layout: 'guest' },
   },
 
   // ─────────────────────────────────────────────────────────
@@ -39,13 +38,13 @@ const routes = [
     path: '/connexion',
     name: 'login',
     component: () => import('../views/auth/LoginView.vue'),
-    meta: { layout: 'none' }
+    meta: { layout: 'none' },
   },
   {
     path: '/inscription',
     name: 'register',
     component: () => import('../views/auth/RegisterView.vue'),
-    meta: { layout: 'none' }
+    meta: { layout: 'none' },
   },
 
   // ─────────────────────────────────────────────────────────
@@ -58,17 +57,17 @@ const routes = [
       {
         path: 'profil',
         name: 'user.profil',
-        component: () => import('../views/user/ProfileView.vue')
+        component: () => import('../views/user/ProfileView.vue'),
       },
       {
         path: 'depots',
         name: 'user.depots',
-        component: () => import('../views/user/MyRequestsView.vue')
+        component: () => import('../views/user/MyRequestsView.vue'),
       },
       {
         path: 'depots/nouveau',
         name: 'user.depots.create',
-        component: () => import('../views/user/DepotRequestFormView.vue')
+        component: () => import('../views/user/DepotRequestFormView.vue'),
       },
     ],
   },
@@ -83,41 +82,56 @@ const routes = [
       {
         path: '',
         name: 'admin.dashboard',
-        component: () => import('../views/admin/DashboardView.vue')
+        component: () => import('../views/admin/DashboardView.vue'),
       },
       // ── Gestion utilisateurs ──
       {
         path: 'utilisateurs',
         name: 'admin.users',
-        component: () => import('../views/admin/UsersListView.vue')
+        component: () => import('../views/admin/UsersListView.vue'),
       },
       {
         path: 'utilisateurs/nouveau',
         name: 'admin.users.create',
-        component: () => import('../views/admin/UserCreateView.vue')
+        component: () => import('../views/admin/UserCreateView.vue'),
       },
       {
         path: 'utilisateurs/:id',
         name: 'admin.users.show',
-        component: () => import('../views/admin/UserShowView.vue')
+        component: () => import('../views/admin/UserShowView.vue'),
       },
       // ── Workflow documents ──
       {
         path: 'publication',
         name: 'admin.publication',
-        component: () => import('../views/admin/PublicationView.vue')
+        component: () => import('../views/admin/PublicationView.vue'),
       },
       {
         path: 'assignation',
         name: 'admin.assignation',
-        component: () => import('../views/admin/AssignmentView.vue')
+        component: () => import('../views/admin/AssignmentView.vue'),
       },
       {
         path: 'decision',
         name: 'admin.decision',
-        component: () => import('../views/admin/FinalDecisionView.vue')
+        component: () => import('../views/admin/FinalDecisionView.vue'),
       },
     ],
+  },
+
+  //_______________________________________________________________
+  //admin/children
+  //______________________________________________________
+  // Catégories
+  {
+    path: '/categories',
+    name: 'admin.categories',
+    component: () => import('../views/admin/categories/CategoriesListView.vue'),
+  },
+  {
+    path: '/categories/nouvelle',
+    name: 'admin.categories.create',
+    component: () => import('../views/admin/categories/CategoryCreateView.vue'),
   },
 
   // ─────────────────────────────────────────────────────────
@@ -130,17 +144,17 @@ const routes = [
       {
         path: '',
         name: 'gestionnaire.dashboard',
-        component: () => import('../views/manager/PendingDocumentsView.vue')
+        component: () => import('../views/manager/PendingDocumentsView.vue'),
       },
       {
         path: 'documents',
         name: 'gestionnaire.documents',
-        component: () => import('../views/manager/PendingDocumentsView.vue')
+        component: () => import('../views/manager/PendingDocumentsView.vue'),
       },
       {
         path: 'parametres',
         name: 'gestionnaire.parametres',
-        component: () => import('../views/manager/ValidationParamsView.vue')
+        component: () => import('../views/manager/ValidationParamsView.vue'),
       },
     ],
   },
@@ -155,27 +169,27 @@ const routes = [
       {
         path: '',
         name: 'rh.dashboard',
-        component: () => import('../views/rh/UsersListView.vue')
+        component: () => import('../views/rh/UsersListView.vue'),
       },
       {
         path: 'utilisateurs',
         name: 'rh.utilisateurs',
-        component: () => import('../views/rh/UsersListView.vue')
+        component: () => import('../views/rh/UsersListView.vue'),
       },
       {
         path: 'utilisateurs/nouveau',
         name: 'rh.utilisateurs.create',
-        component: () => import('../views/rh/UserFormView.vue')
+        component: () => import('../views/rh/UserFormView.vue'),
       },
       {
         path: 'utilisateurs/:id/modifier',
         name: 'rh.utilisateurs.edit',
-        component: () => import('../views/rh/UserFormView.vue')
+        component: () => import('../views/rh/UserFormView.vue'),
       },
       {
         path: 'historique',
         name: 'rh.historique',
-        component: () => import('../views/rh/ActionHistoryView.vue')
+        component: () => import('../views/rh/ActionHistoryView.vue'),
       },
     ],
   },
@@ -197,7 +211,6 @@ router.beforeEach(async (to, from) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth) {
-
     // Rechargement de page : session inconnue → on demande à Laravel
     if (!authStore.isAuthenticated) {
       await authStore.fetchUser()
@@ -205,7 +218,7 @@ router.beforeEach(async (to, from) => {
 
     // Toujours pas connecté → rediriger vers /connexion
     if (!authStore.isAuthenticated) {
-      return '/connexion'  // ← plus de next(), on retourne directement
+      return '/connexion' // ← plus de next(), on retourne directement
     }
 
     // Connecté mais mauvais rôle → retour accueil
@@ -218,7 +231,6 @@ router.beforeEach(async (to, from) => {
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
     return '/'
   }
-
 })
 
 export default router

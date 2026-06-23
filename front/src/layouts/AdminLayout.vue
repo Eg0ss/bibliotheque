@@ -1,46 +1,76 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
-const router    = useRouter()
+const route     = useRoute()
+const openGroup = ref(null)
 
-// On calcule les items de menu selon le rôle de l'utilisateur connecté
+function toggleGroup(name) {
+  openGroup.value = openGroup.value === name ? null : name
+}
+
+// ── sidebarItems déclaré EN PREMIER ──────────────────────────
 const sidebarItems = computed(() => {
-  const role = authStore.userRole // On récupère le rôle de l'utilisateur connecté
+  const role = authStore.userRole
 
   if (role === 'admin') {
     return [
-      // Icône + libellé + chemin pour chaque entrée de menu
-      { to: '/admin',                    label: 'Tableau de bord',    icon: '' },
-      { to: '/admin/utilisateurs',       label: 'Utilisateurs',       icon: '' },
-      { to: '/admin/publication',        label: 'Publications',        icon: '' },
-      { to: '/admin/assignation',        label: 'Assignations',        icon: '' },
-      { to: '/admin/decision',           label: 'Décisions finales',   icon: '' },
+      { type: 'link',  to: '/admin',            label: 'Tableau de bord'  },
+      {
+        type    : 'group',
+        name    : 'initialisation',
+        label   : 'Initialisation',
+        children: [
+          { to: '/admin/utilisateurs', label: 'Utilisateurs'},
+          { to: '/admin/categories',   label: 'Catégories' },
+          { to: '/admin/types',        label: 'Types'},
+        ],
+      },
+      { type: 'link',  to: '/admin/publication', label: 'Publications'     },
+      { type: 'link',  to: '/admin/assignation', label: 'Assignations'},
+      { type: 'link',  to: '/admin/decision',    label: 'Décisions finales' },
     ]
   }
 
   if (role === 'gestionnaire') {
     return [
-      { to: '/gestionnaire',             label: 'Tableau de bord',    icon: '' },
-      { to: '/gestionnaire/documents',   label: 'Documents à vérifier', icon: '' },
-      { to: '/gestionnaire/parametres',  label: 'Paramètres de validation', icon: '' },
+      { type: 'link', to: '/gestionnaire',             label: 'Tableau de bord' },
+      { type: 'link', to: '/gestionnaire/documents',   label: 'Documents à vérifier' },
+      { type: 'link', to: '/gestionnaire/parametres',  label: 'Paramètres validation' },
     ]
   }
 
   if (role === 'rh') {
     return [
-      { to: '/rh',                       label: 'Tableau de bord',    icon: '' },
-      { to: '/rh/utilisateurs',          label: 'Utilisateurs',       icon: '' },
-      { to: '/rh/historique',            label: 'Historique',          icon: '' },
+      { type: 'link', to: '/rh',               label: 'Tableau de bord' },
+      { type: 'link', to: '/rh/utilisateurs',  label: 'Utilisateurs' },
+      { type: 'link', to: '/rh/historique',    label: 'Historique' },
     ]
   }
 
   return []
 })
 
-// Déconnexion depuis le layout
+// ── watch déclaré APRÈS sidebarItems ─────────────────────────
+// Maintenant sidebarItems.value est accessible correctement
+watch(
+  () => route.path,
+  (path) => {
+    for (const item of sidebarItems.value) {
+      if (item.type === 'group') {
+        const match = item.children.some(child => path.startsWith(child.to))
+        if (match) {
+          openGroup.value = item.name
+          return
+        }
+      }
+    }
+  },
+  { immediate: true }
+)
+
 async function handleLogout() {
   await authStore.logout()
 }
@@ -52,15 +82,15 @@ async function handleLogout() {
     <!-- ── Sidebar ── -->
     <aside class="w-64 bg-[#042C53] text-white flex flex-col min-h-screen">
 
-      <!-- Logo / Titre -->
+      <!-- Logo -->
       <div class="p-5 border-b border-white/20">
         <h1 class="text-base font-bold tracking-wide uppercase text-white/90">
-           Bibliothèque
+          Bibliothèque
         </h1>
         <p class="text-xs text-white/50 mt-1">Espace administration</p>
       </div>
 
-      <!-- Infos utilisateur connecté -->
+      <!-- Infos utilisateur -->
       <div class="px-5 py-4 border-b border-white/10 bg-white/5">
         <p class="text-sm font-semibold text-white truncate">
           {{ authStore.user?.name }}
@@ -70,26 +100,57 @@ async function handleLogout() {
         </span>
       </div>
 
-      <!-- Menu de navigation -->
+      <!-- Navigation -->
       <nav class="flex-1 p-4 space-y-1">
-        <RouterLink
-          v-for="item in sidebarItems"
-          :key="item.to"
-          :to="item.to"
-          class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-all"
-          :class="{ 'bg-white/20 text-white font-semibold': $route.path === item.to }"
-        >
-          <span class="text-base">{{ item.icon }}</span>
-          {{ item.label }}
-        </RouterLink>
+        <template v-for="item in sidebarItems" :key="item.to ?? item.name">
+
+          <!-- Lien simple -->
+          <RouterLink v-if="item.type === 'link'" :to="item.to"
+            class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-all"
+            :class="{ 'bg-white/20 text-white font-semibold': route.path === item.to }">
+            <span class="text-base">{{ item.icon }}</span>
+            {{ item.label }}
+          </RouterLink>
+
+          <!-- Groupe déroulant -->
+          <!-- Groupe déroulant -->
+          <div v-else-if="item.type === 'group'">
+
+            <!-- Bouton du groupe -->
+            <button @click="toggleGroup(item.name)"
+              class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm transition-all" :class="openGroup === item.name
+                ? 'bg-white/20 text-white font-semibold'
+                : 'text-white/80 hover:bg-white/10 hover:text-white'">
+              <span class="flex items-center gap-3">
+                <span class="text-base">{{ item.icon }}</span>
+                {{ item.label }}
+              </span>
+
+              <!-- Flèche : tourne uniquement selon openGroup (plus de isGroupActive) -->
+              <span class="text-xs transition-transform duration-200 inline-block"
+                :class="openGroup === item.name ? 'rotate-180' : 'rotate-0'">
+                ▼
+              </span>
+            </button>
+
+            <!-- Sous-menus : visibles uniquement si openGroup === item.name -->
+            <div v-show="openGroup === item.name" class="mt-1 ml-4 pl-3 border-l border-white/20 space-y-1">
+              <RouterLink v-for="child in item.children" :key="child.to" :to="child.to"
+                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-all"
+                :class="{ 'bg-white/15 text-white font-medium': route.path.startsWith(child.to) }">
+                <span class="text-sm">{{ child.icon }}</span>
+                {{ child.label }}
+              </RouterLink>
+            </div>
+
+          </div>
+        </template>
       </nav>
 
-      <!-- Bouton déconnexion en bas -->
+      <!-- Déconnexion -->
       <div class="p-4 border-t border-white/10">
-        <button
-          @click="handleLogout"
-          class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/70 hover:bg-red-600/30 hover:text-white transition-all"
-        >
+        <button @click="handleLogout"
+          class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/70 hover:bg-red-600/30 hover:text-white transition-all">
           <span></span> Déconnexion
         </button>
       </div>
@@ -97,17 +158,13 @@ async function handleLogout() {
 
     <!-- ── Contenu principal ── -->
     <div class="flex-1 flex flex-col overflow-hidden">
-
-      <!-- Barre du haut -->
       <header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-        <h2 class="text-sm font-medium text-gray-500">
-          <!-- Titre dynamique selon la route active -->
-          {{ $route.name?.replace('admin.', '').replace('.', ' › ') }}
+        <h2 class="text-sm font-medium text-gray-500 capitalize">
+          {{ route.name?.toString().replace(/\./g, ' › ') }}
         </h2>
         <span class="text-sm text-gray-400">{{ authStore.user?.email }}</span>
       </header>
 
-      <!-- Zone de contenu : RouterView affiche la page active -->
       <main class="flex-1 overflow-auto p-6">
         <RouterView />
       </main>

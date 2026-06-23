@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('users', UserController::class);
         Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
         Route::get('roles', [UserController::class, 'getRoles']);
+
+        // Catégories
+        Route::get('categories/all', [CategoryController::class, 'all']); // avant apiResource
+        Route::apiResource('categories', CategoryController::class);
     });
 
     /*
