@@ -12,7 +12,7 @@
 6. **sessions** — table technique Laravel pour gérer les sessions de connexion.
 7. **personal_access_tokens** — table technique pour les tokens d'authentification API (Sanctum).
 8. **categories** — les catégories/thématiques du catalogue (peut avoir des sous-catégories grâce à `parent_id`).
-9. **document_references** — la table centrale du catalogue : chaque référence documentaire (titre, auteur, description, statut de validation, catégorie).
+9. **document_references** — la table centrale du catalogue : chaque référence documentaire (image, titre, catégorie, type, auteur, description, statut de validation,).
 10. **documents** — les fichiers physiques (PDF...) liés à une référence ; une référence peut avoir plusieurs fichiers/versions.
 11. **depot_requests** — les demandes de dépôt soumises par les utilisateurs (nouvelle référence à ajouter au catalogue).
 12. **document_assignments** — trace quand l'admin assigne un document à un gestionnaire, ou le soumet à un autre responsable pour revérification.
