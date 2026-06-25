@@ -35,17 +35,12 @@ Route::middleware('auth:sanctum')->group(function () {
     */
     Route::prefix('admin')->group(function () {
 
-        // GET    /api/admin/users         → liste paginée
-        // POST   /api/admin/users         → créer un user
-        // GET    /api/admin/users/{id}    → voir un user
-        // PUT    /api/admin/users/{id}    → modifier un user
-        // DELETE /api/admin/users/{id}    → supprimer
         Route::apiResource('users', UserController::class);
         Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
         Route::get('roles', [UserController::class, 'getRoles']);
 
-        // Catégories
-        Route::get('categories/all', [CategoryController::class, 'all']); // avant apiResource
+        // Catégories admin (avec pagination)
+        Route::get('categories/all', [CategoryController::class, 'all']);
         Route::apiResource('categories', CategoryController::class);
     });
 
@@ -54,20 +49,14 @@ Route::middleware('auth:sanctum')->group(function () {
 | Routes Utilisateur connecté
 |--------------------------------------------------------------------------
 */
-Route::prefix('user')->group(function () {
+    Route::prefix('user')->group(function () {
+        
+        Route::get('categories', [CategoryController::class, 'all']);
+        Route::get('types',      [TypeController::class, 'index']);
 
-    // GET  /api/user/depot-requests      → liste des demandes du user
-    // POST /api/user/depot-requests      → soumettre une nouvelle demande
-    // GET  /api/user/depot-requests/{id} → voir une demande précise
-    Route::get('depot-requests',       [DepotRequestController::class, 'index']);
-    Route::post('depot-requests',      [DepotRequestController::class, 'store']);
-    Route::get('depot-requests/{id}',  [DepotRequestController::class, 'show']);
-
-    // Données nécessaires pour remplir les selects du formulaire
-    // (accessibles à tout utilisateur connecté)
-    Route::get('categories', [CategoryController::class, 'index']);
-    Route::get('types',      [TypeController::class, 'index']);
-});
-
-    
+        // Demandes de dépôt
+        Route::get('depot-requests',      [DepotRequestController::class, 'index']);
+        Route::post('depot-requests',     [DepotRequestController::class, 'store']);
+        Route::get('depot-requests/{id}', [DepotRequestController::class, 'show']);
+    });
 });

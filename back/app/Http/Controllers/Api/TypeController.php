@@ -1,11 +1,20 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
+use App\Http\Controllers\Controller;
+use App\Models\Type;
 
 class TypeController extends Controller
 {
-    //
+    /**
+     * Retourner tous les types pour les selects du formulaire
+     * GET /api/user/types
+     */
+    public function index()
+    {
+        $types = Type::orderBy('name')->get(['id', 'name', 'slug']);
+
+        return response()->json(['data' => $types]);
+    }
 }
