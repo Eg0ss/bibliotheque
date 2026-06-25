@@ -6,20 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
+
+            // Référence documentaire à laquelle ce fichier est rattaché
+            $table->foreignId('reference_id')
+                ->constrained('document_references')
+                ->cascadeOnDelete();
+
+            $table->string('file_path');              // Chemin du fichier sur le serveur
+            $table->string('original_name');          // Nom original du fichier uploadé
+            $table->string('mime_type')->default('application/pdf');
+            $table->unsignedBigInteger('file_size')->nullable(); // Taille en octets
+            $table->unsignedTinyInteger('version')->default(1);  // Version du fichier
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('documents');

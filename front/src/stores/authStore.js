@@ -107,10 +107,8 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUser() {
     try {
       const response = await authApi.me()
-      console.log('REPONSE ME :', response.data)
       user.value = response.data.user
     } catch (error) {
-      console.log('ERREUR ME (status) :', error.response?.status)
       user.value = null
     }
   }

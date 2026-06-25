@@ -19,30 +19,27 @@ const sidebarItems = [
     type : 'link',
     to   : '/mon-espace/depots',
     label: 'Mes dépôts',
-    icon : '📂',
   },
   {
     type    : 'group',
     name    : 'catalogue',
     label   : 'Catalogue',
-    icon    : '📚',
     children: [
-      { to: '/catalogue',  label: 'Parcourir',         icon: '🔍' },
-      { to: '/recherche',  label: 'Recherche avancée', icon: '🔎' },
-      { to: '/statistiques', label: 'Statistiques',    icon: '📊' },
+      { to: '/catalogue',  label: 'Parcourir'          },
+      { to: '/recherche',  label: 'Recherche avancée'  },
+      { to: '/statistiques', label: 'Statistiques'     },
     ],
   },
   {
     type : 'link',
     to   : '/mon-espace/depots/nouveau',
-    label: 'Soumettre un document',
-    icon : '➕',
+    label: 'Soumettre une demande',
+    
   },
   {
     type : 'link',
     to   : '/mon-espace/profil',
-    label: 'Mon profil',
-    icon : '👤',
+    label: 'Mon profil'
   },
 ]
 
@@ -178,7 +175,7 @@ async function handleLogout() {
           class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
                  text-white/70 hover:bg-red-600/30 hover:text-white transition-all"
         >
-          <span>🚪</span> Déconnexion
+          <span></span> Déconnexion
         </button>
       </div>
     </aside>

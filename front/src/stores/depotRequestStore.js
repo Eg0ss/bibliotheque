@@ -1,0 +1,101 @@
+// Store Pinia pour la gestion des demandes de dépôt
+
+import { defineStore } from 'pinia'
+import { ref }         from 'vue'
+import depotRequestApi from '../api/depotRequestApi'
+import router          from '../router'
+import { useToast }    from 'primevue/usetoast'
+
+export const useDepotRequestStore = defineStore('depotRequest', () => {
+
+  // ── État ────────────────────────────────────────────────────────────
+  const myRequests = ref([])      // liste des demandes de l'utilisateur
+  const categories = ref([])      // pour le <select> catégorie
+  const types      = ref([])      // pour le <select> type
+  const loading    = ref(false)
+  const errors     = ref({})
+
+  const toast = useToast()
+
+  // ── Charger les catégories et types (pour les selects) ──────────────
+  async function fetchFormOptions() {
+    try {
+      const [catRes, typeRes] = await Promise.all([
+        depotRequestApi.getCategories(),
+        depotRequestApi.getTypes(),
+      ])
+      categories.value = catRes.data.data
+      types.value      = typeRes.data.data
+    } catch (error) {
+      toast.add({
+        severity : 'error',
+        summary  : 'Erreur',
+        detail   : 'Impossible de charger les options du formulaire.',
+        life     : 4000,
+      })
+    }
+  }
+
+  // ── Soumettre une nouvelle demande ────────────────────────────────────
+  async function submitRequest(formData) {
+    loading.value = true
+    errors.value  = {}
+    try {
+      await depotRequestApi.store(formData)
+
+      toast.add({
+        severity : 'success',
+        summary  : 'Demande soumise',
+        detail   : 'Votre demande a été soumise avec succès. Elle sera traitée prochainement.',
+        life     : 5000,
+      })
+
+      // Rediriger vers la liste des demandes
+      router.push('/mon-espace/depots')
+
+    } catch (error) {
+      if (error.response?.status === 422) {
+        // Erreurs de validation Laravel → affichage champ par champ
+        errors.value = error.response.data.errors
+        toast.add({
+          severity : 'warn',
+          summary  : 'Formulaire invalide',
+          detail   : 'Veuillez corriger les erreurs signalées.',
+          life     : 4000,
+        })
+      } else {
+        toast.add({
+          severity : 'error',
+          summary  : 'Erreur serveur',
+          detail   : 'Une erreur est survenue. Veuillez réessayer.',
+          life     : 5000,
+        })
+      }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // ── Récupérer les demandes de l'utilisateur connecté ─────────────────
+  async function fetchMyRequests(page = 1) {
+    loading.value = true
+    try {
+      const response   = await depotRequestApi.getMyRequests(page)
+      myRequests.value = response.data.data
+    } catch (error) {
+      toast.add({
+        severity : 'error',
+        summary  : 'Erreur',
+        detail   : 'Impossible de charger vos demandes.',
+        life     : 4000,
+      })
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    myRequests, categories, types, loading, errors,
+    fetchFormOptions, submitRequest, fetchMyRequests,
+  }
+})

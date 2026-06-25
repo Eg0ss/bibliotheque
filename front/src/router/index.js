@@ -31,46 +31,48 @@ const routes = [
     meta: { layout: 'guest' },
   },
 
-  // ─────────────────────────────────────────────────────────
-  // AUTHENTIFICATION  →  layout: 'none' (plein écran, pas de navbar)
-  // ─────────────────────────────────────────────────────────
-  {
-    path: '/connexion',
-    name: 'login',
-    component: () => import('../views/auth/LoginView.vue'),
-    meta: { layout: 'none' },
-  },
-  {
-    path: '/inscription',
-    name: 'register',
-    component: () => import('../views/auth/RegisterView.vue'),
-    meta: { layout: 'none' },
-  },
+  // AUTHENTIFICATION
+{
+  path: '/connexion',
+  name: 'login',
+  component: () => import('../views/auth/LoginView.vue'),
+  meta: { layout: 'guest' },
+},
+{
+  path: '/inscription',
+  name: 'register',
+  component: () => import('../views/auth/RegisterView.vue'),
+  meta: { layout: 'guest' },
+},
 
   // ─────────────────────────────────────────────────────────
-  // ESPACE UTILISATEUR CONNECTÉ  →  layout: 'user'
-  // ─────────────────────────────────────────────────────────
-  {
-    path: '/mon-espace',
-    meta: { layout: 'user', requiresAuth: true },
-    children: [
-      {
-        path: 'profil',
-        name: 'user.profil',
-        component: () => import('../views/user/ProfileView.vue'),
-      },
-      {
-        path: 'depots',
-        name: 'user.depots',
-        component: () => import('../views/user/MyRequestsView.vue'),
-      },
-      {
-        path: 'depots/nouveau',
-        name: 'user.depots.create',
-        component: () => import('../views/user/DepotRequestFormView.vue'),
-      },
-    ],
-  },
+// ESPACE UTILISATEUR CONNECTÉ  →  layout: 'user'
+// ─────────────────────────────────────────────────────────
+{
+  path: '/mon-espace',
+  meta: { layout: 'user', requiresAuth: true },
+  children: [
+    {
+      path: 'profil',
+      name: 'user.profil',
+      meta: { layout: 'user', requiresAuth: true },
+      component: () => import('../views/user/ProfileView.vue'),
+    },
+    {
+      path: 'depots',
+      name: 'user.depots',
+      meta: { layout: 'user', requiresAuth: true },
+      component: () => import('../views/user/MyRequestsView.vue'),
+    },
+    {
+      path: 'depots/nouveau',
+      name: 'user.depots.create',
+      meta: { layout: 'user', requiresAuth: true },
+      component: () => import('../views/user/DepotRequestFormView.vue'),
+    },
+  ],
+},
+
 
   // ─────────────────────────────────────────────────────────
   // ESPACE ADMIN  →  layout: 'admin' (sidebar AdminLayout)

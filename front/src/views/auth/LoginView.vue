@@ -10,8 +10,8 @@ const form = reactive({
   password: '',
 })
 
-function handleSubmit() {
-  authStore.login(form)
+async function handleSubmit() {
+   authStore.login(form)
 }
 </script>
 

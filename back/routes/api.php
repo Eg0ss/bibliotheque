@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\TypeController;
+use App\Http\Controllers\Api\DepotRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,8 +50,24 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     /*
-    |----------------------------------------------------------------------
-    | On ajoutera ici les routes Gestionnaire et RH dans les étapes suivantes
-    |----------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Routes Utilisateur connecté
+|--------------------------------------------------------------------------
+*/
+Route::prefix('user')->group(function () {
+
+    // GET  /api/user/depot-requests      → liste des demandes du user
+    // POST /api/user/depot-requests      → soumettre une nouvelle demande
+    // GET  /api/user/depot-requests/{id} → voir une demande précise
+    Route::get('depot-requests',       [DepotRequestController::class, 'index']);
+    Route::post('depot-requests',      [DepotRequestController::class, 'store']);
+    Route::get('depot-requests/{id}',  [DepotRequestController::class, 'show']);
+
+    // Données nécessaires pour remplir les selects du formulaire
+    // (accessibles à tout utilisateur connecté)
+    Route::get('categories', [CategoryController::class, 'index']);
+    Route::get('types',      [TypeController::class, 'index']);
+});
+
+    
 });

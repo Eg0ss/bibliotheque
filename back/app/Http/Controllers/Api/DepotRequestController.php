@@ -3,47 +3,106 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DepotRequest\StoreDepotRequest;
+use App\Models\DepotRequest;
+use App\Models\Document;
+use App\Models\DocumentReference;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class DepotRequestController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * LISTER les demandes de l'utilisateur connecté
+     * Route : GET /api/user/depot-requests
+     * Utilisé par MyRequestsView.vue
      */
     public function index()
     {
-        //
+        $requests = DepotRequest::with(['reference.category', 'reference.type'])
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return response()->json($requests);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * SOUMETTRE une nouvelle demande de dépôt
+     * Route : POST /api/user/depot-requests
+     *
+     * Ce qu'on fait dans l'ordre :
+     * 1. Enregistrer le fichier PDF sur le serveur
+     * 2. Enregistrer l'image de couverture (si fournie)
+     * 3. Créer la DocumentReference (notice bibliographique)
+     * 4. Créer le Document (fichier physique lié)
+     * 5. Créer la DepotRequest (demande de validation)
      */
-    public function store(Request $request)
+    public function store(StoreDepotRequest $request)
     {
-        //
+        // ── 1. Stocker le fichier PDF ──────────────────────────────────
+        // Storage::disk('local') = dossier storage/app/
+        // 'documents/private' = sous-dossier non accessible publiquement
+        $filePath = $request->file('file')->store('documents/private', 'local');
+
+        // ── 2. Stocker l'image de couverture (optionnelle) ────────────
+        $coverPath = null;
+        if ($request->hasFile('cover_image')) {
+            // 'public' disk = storage/app/public/ → accessible via /storage/...
+            $coverPath = $request->file('cover_image')->store('covers', 'public');
+        }
+
+        // ── 3. Créer la référence documentaire ────────────────────────
+        $reference = DocumentReference::create([
+            'title'            => $request->validated()['title'],
+            'author'           => $request->validated()['author'],
+            'publisher'        => $request->validated()['publisher'] ?? null,
+            'publication_year' => $request->validated()['publication_year'] ?? null,
+            'language'         => $request->validated()['language'] ?? 'fr',
+            'isbn'             => $request->validated()['isbn'] ?? null,
+            'abstract'         => $request->validated()['abstract'] ?? null,
+            'category_id'      => $request->validated()['category_id'],
+            'type_id'          => $request->validated()['type_id'],
+            'submitted_by'     => Auth::id(),   // utilisateur connecté
+            'status'           => 'pending',    // statut initial
+            'cover_image'      => $coverPath,
+        ]);
+
+        // ── 4. Créer l'entrée Document (fichier physique) ─────────────
+        Document::create([
+            'reference_id'  => $reference->id,
+            'file_path'     => $filePath,
+            'original_name' => $request->file('file')->getClientOriginalName(),
+            'mime_type'     => $request->file('file')->getMimeType(),
+            'file_size'     => $request->file('file')->getSize(),
+            'version'       => 1,
+        ]);
+
+        // ── 5. Créer la demande de dépôt ──────────────────────────────
+        $depotRequest = DepotRequest::create([
+            'user_id'      => Auth::id(),
+            'reference_id' => $reference->id,
+            'status'       => 'pending',
+        ]);
+
+        return response()->json([
+            'message' => 'Votre demande a été soumise avec succès. Elle sera traitée prochainement.',
+            'data'    => $depotRequest->load('reference'),
+        ], 201);
     }
 
     /**
-     * Display the specified resource.
+     * VOIR une demande précise de l'utilisateur connecté
+     * Route : GET /api/user/depot-requests/{id}
      */
     public function show(string $id)
     {
-        //
-    }
+        // On s'assure que la demande appartient bien à l'utilisateur connecté
+        $depotRequest = DepotRequest::with(['reference.category', 'reference.type'])
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json(['data' => $depotRequest]);
     }
 }
