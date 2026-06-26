@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('title');                          // Titre du document
             $table->string('author');                         // Auteur(s)
             $table->string('publisher')->nullable();          // Éditeur / Institution
-            $table->year('publication_year')->nullable();     // Année de publication
+            $table->unsignedSmallInteger('publication_year')->nullable();    // Année de publication
             $table->string('language')->default('fr');        // Langue
             $table->string('isbn')->nullable()->unique();     // ISBN (optionnel)
             $table->text('abstract')->nullable();             // Résumé / description
