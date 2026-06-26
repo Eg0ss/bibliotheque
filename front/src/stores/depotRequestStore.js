@@ -1,19 +1,19 @@
 // Store Pinia pour la gestion des demandes de dépôt
 
 import { defineStore } from 'pinia'
-import { ref }         from 'vue'
+import { ref } from 'vue'
 import depotRequestApi from '../api/depotRequestApi'
-import router          from '../router'
-import { useToast }    from 'primevue/usetoast'
+import router from '../router'
+import { useToast } from 'primevue/usetoast'
 
 export const useDepotRequestStore = defineStore('depotRequest', () => {
-
   // ── État ────────────────────────────────────────────────────────────
-  const myRequests = ref([])      // liste des demandes de l'utilisateur
-  const categories = ref([])      // pour le <select> catégorie
-  const types      = ref([])      // pour le <select> type
-  const loading    = ref(false)
-  const errors     = ref({})
+  const myRequests = ref([]) // liste des demandes de l'utilisateur
+  const pagination = ref(null) // pagination pour la liste des demandes
+  const categories = ref([]) // pour le <select> catégorie
+  const types = ref([]) // pour le <select> type
+  const loading = ref(false)
+  const errors = ref({})
 
   const toast = useToast()
 
@@ -25,13 +25,13 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
         depotRequestApi.getTypes(),
       ])
       categories.value = catRes.data.data
-      types.value      = typeRes.data.data
+      types.value = typeRes.data.data
     } catch (error) {
       toast.add({
-        severity : 'error',
-        summary  : 'Erreur',
-        detail   : 'Impossible de charger les options du formulaire.',
-        life     : 4000,
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Impossible de charger les options du formulaire.',
+        life: 4000,
       })
     }
   }
@@ -39,36 +39,35 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
   // ── Soumettre une nouvelle demande ────────────────────────────────────
   async function submitRequest(formData) {
     loading.value = true
-    errors.value  = {}
+    errors.value = {}
     try {
       await depotRequestApi.store(formData)
 
       toast.add({
-        severity : 'success',
-        summary  : 'Demande soumise',
-        detail   : 'Votre demande a été soumise avec succès. Elle sera traitée prochainement.',
-        life     : 5000,
+        severity: 'success',
+        summary: 'Demande soumise',
+        detail: 'Votre demande a été soumise avec succès. Elle sera traitée prochainement.',
+        life: 5000,
       })
 
       // Rediriger vers la liste des demandes
       router.push('/mon-espace/depots')
-
     } catch (error) {
       if (error.response?.status === 422) {
         // Erreurs de validation Laravel → affichage champ par champ
         errors.value = error.response.data.errors
         toast.add({
-          severity : 'warn',
-          summary  : 'Formulaire invalide',
-          detail   : 'Veuillez corriger les erreurs signalées.',
-          life     : 4000,
+          severity: 'warn',
+          summary: 'Formulaire invalide',
+          detail: 'Veuillez corriger les erreurs signalées.',
+          life: 4000,
         })
       } else {
         toast.add({
-          severity : 'error',
-          summary  : 'Erreur serveur',
-          detail   : 'Une erreur est survenue. Veuillez réessayer.',
-          life     : 5000,
+          severity: 'error',
+          summary: 'Erreur serveur',
+          detail: 'Une erreur est survenue. Veuillez réessayer.',
+          life: 5000,
         })
       }
     } finally {
@@ -80,14 +79,19 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
   async function fetchMyRequests(page = 1) {
     loading.value = true
     try {
-      const response   = await depotRequestApi.getMyRequests(page)
+      const response = await depotRequestApi.getMyRequests(page)
       myRequests.value = response.data.data
+      pagination.value = {
+        current_page: response.data.current_page,
+        last_page: response.data.last_page,
+        total: response.data.total,
+      }
     } catch (error) {
       toast.add({
-        severity : 'error',
-        summary  : 'Erreur',
-        detail   : 'Impossible de charger vos demandes.',
-        life     : 4000,
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Impossible de charger vos demandes.',
+        life: 4000,
       })
     } finally {
       loading.value = false
@@ -95,7 +99,14 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
   }
 
   return {
-    myRequests, categories, types, loading, errors,
-    fetchFormOptions, submitRequest, fetchMyRequests,
+    myRequests,
+    pagination,
+    categories,
+    types,
+    loading,
+    errors,
+    fetchFormOptions,
+    submitRequest,
+    fetchMyRequests,
   }
 })
