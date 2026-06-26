@@ -9,12 +9,16 @@ use App\Http\Controllers\Api\DepotRequestController;
 
 /*
 |--------------------------------------------------------------------------
-| Routes publiques
+| Routes publiques (sans authentification)
 |--------------------------------------------------------------------------
 */
-
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
+
+// Types et catégories accessibles sans connexion
+// (catalogue public + formulaires visiteurs)
+Route::get('/types',      [TypeController::class, 'index']);
+Route::get('/categories', [CategoryController::class, 'all']);
 
 /*
 |--------------------------------------------------------------------------
@@ -29,31 +33,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |----------------------------------------------------------------------
-    | Routes Admin - Gestion des utilisateurs
-    | Préfixe /api/admin/users
+    | Routes Admin
     |----------------------------------------------------------------------
     */
     Route::prefix('admin')->group(function () {
-
         Route::apiResource('users', UserController::class);
         Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
         Route::get('roles', [UserController::class, 'getRoles']);
 
-        // Catégories admin (avec pagination)
+        // Catégories (avec pagination pour le back-office)
         Route::get('categories/all', [CategoryController::class, 'all']);
         Route::apiResource('categories', CategoryController::class);
+
+        // Types (avec pagination pour le back-office)
+        Route::apiResource('types', TypeController::class);
     });
 
     /*
-|--------------------------------------------------------------------------
-| Routes Utilisateur connecté
-|--------------------------------------------------------------------------
-*/
+    |----------------------------------------------------------------------
+    | Routes Utilisateur connecté
+    |----------------------------------------------------------------------
+    */
     Route::prefix('user')->group(function () {
-        
-        Route::get('categories', [CategoryController::class, 'all']);
-        Route::get('types',      [TypeController::class, 'index']);
-
         // Demandes de dépôt
         Route::get('depot-requests',      [DepotRequestController::class, 'index']);
         Route::post('depot-requests',     [DepotRequestController::class, 'store']);
