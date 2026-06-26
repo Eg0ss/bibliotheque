@@ -36,14 +36,14 @@ const depotRequestApi = {
    * Charger les catégories pour le <select> du formulaire
    */
   getCategories() {
-    return apiClient.get('/api/user/categories')
+    return apiClient.get('/api/categories')
   },
 
   /**
    * Charger les types pour le <select> du formulaire
    */
   getTypes() {
-    return apiClient.get('/api/user/types')
+    return apiClient.get('/api/types')
   },
 }
 
