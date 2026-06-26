@@ -72,24 +72,20 @@ function nextStep() {
 
 // ── Soumettre le formulaire ──────────────────────────────────────────────
 function handleSubmit() {
-  if (!pdfFile.value) {
-    alert('Veuillez sélectionner un fichier PDF.')
-    return
-  }
-
-  // FormData est obligatoire pour envoyer des fichiers avec Axios
-  // On ne peut pas utiliser JSON pour ça
+  // PDF optionnel : on soumet même sans fichier
   const formData = new FormData()
 
-  // Ajouter toutes les métadonnées
+  // Ajouter toutes les métadonnées (on ignore les valeurs vides)
   Object.entries(form).forEach(([key, value]) => {
     if (value !== '' && value !== null) {
       formData.append(key, value)
     }
   })
 
-  // Ajouter les fichiers
-  formData.append('file', pdfFile.value)
+  // Ajouter les fichiers seulement s'ils ont été sélectionnés
+  if (pdfFile.value) {
+    formData.append('file', pdfFile.value)
+  }
   if (coverFile.value) {
     formData.append('cover_image', coverFile.value)
   }
@@ -306,7 +302,7 @@ function handleSubmit() {
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Fichier PDF <span class="text-red-500">*</span>
-            <span class="text-gray-400 font-normal ml-1">(20 Mo max)</span>
+            <span class="text-gray-400 font-normal ml-1">(optionnel — PDF, 20 Mo max)</span>
           </label>
 
           <!-- Zone de drop stylisée -->
@@ -386,7 +382,7 @@ function handleSubmit() {
           </button>
           <button
             @click="handleSubmit"
-            :disabled="store.loading || !pdfFile"
+            :disabled="store.loading"
             class="flex-1 bg-[#042C53] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#0C447C] transition disabled:opacity-50"
           >
             {{ store.loading ? 'Envoi en cours...' : '📤 Soumettre la demande' }}
