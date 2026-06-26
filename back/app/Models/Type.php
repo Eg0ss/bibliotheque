@@ -1,20 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Models;
 
-use App\Http\Controllers\Controller;
-use App\Models\Type;
+use Illuminate\Database\Eloquent\Model;
 
-class TypeController extends Controller
+class Type extends Model
 {
-    /**
-     * Retourner tous les types pour alimenter le <select> du formulaire
-     * Route : GET /api/user/types
-     */
-    public function index()
-    {
-        $types = Type::orderBy('name')->get(['id', 'name', 'slug']);
+    protected $fillable = ['name', 'slug', 'description'];
 
-        return response()->json(['data' => $types]);
+    public function references()
+    {
+        return $this->hasMany(DocumentReference::class);
     }
 }
