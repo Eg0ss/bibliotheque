@@ -28,7 +28,7 @@ class StoreDepotRequest extends FormRequest
             'isbn'             => ['nullable', 'string', 'max:20'],
             'abstract'         => ['nullable', 'string', 'max:3000'],
 
-            // ── Fichier PDF obligatoire ───────────────────────────────
+            // ── Fichier PDF ───────────────────────────────
             'file'             => ['nullable', 'file', 'mimes:pdf', 'max:20480'], // 20 Mo max
 
             // ── Image de couverture optionnelle ───────────────────────

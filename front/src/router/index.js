@@ -32,47 +32,46 @@ const routes = [
   },
 
   // AUTHENTIFICATION
-{
-  path: '/connexion',
-  name: 'login',
-  component: () => import('../views/auth/LoginView.vue'),
-  meta: { layout: 'guest' },
-},
-{
-  path: '/inscription',
-  name: 'register',
-  component: () => import('../views/auth/RegisterView.vue'),
-  meta: { layout: 'guest' },
-},
+  {
+    path: '/connexion',
+    name: 'login',
+    component: () => import('../views/auth/LoginView.vue'),
+    meta: { layout: 'guest' },
+  },
+  {
+    path: '/inscription',
+    name: 'register',
+    component: () => import('../views/auth/RegisterView.vue'),
+    meta: { layout: 'guest' },
+  },
 
   // ─────────────────────────────────────────────────────────
-// ESPACE UTILISATEUR CONNECTÉ  →  layout: 'user'
-// ─────────────────────────────────────────────────────────
-{
-  path: '/mon-espace',
-  meta: { layout: 'user', requiresAuth: true },
-  children: [
-    {
-      path: 'profil',
-      name: 'user.profil',
-      meta: { layout: 'user', requiresAuth: true },
-      component: () => import('../views/user/ProfileView.vue'),
-    },
-    {
-      path: 'depots',
-      name: 'user.depots',
-      meta: { layout: 'user', requiresAuth: true },
-      component: () => import('../views/user/MyRequestsView.vue'),
-    },
-    {
-      path: 'depots/nouveau',
-      name: 'user.depots.create',
-      meta: { layout: 'user', requiresAuth: true },
-      component: () => import('../views/user/DepotRequestFormView.vue'),
-    },
-  ],
-},
-
+  // ESPACE UTILISATEUR CONNECTÉ  →  layout: 'user'
+  // ─────────────────────────────────────────────────────────
+  {
+    path: '/mon-espace',
+    meta: { layout: 'user', requiresAuth: true },
+    children: [
+      {
+        path: 'profil',
+        name: 'user.profil',
+        meta: { layout: 'user', requiresAuth: true },
+        component: () => import('../views/user/ProfileView.vue'),
+      },
+      {
+        path: 'depots',
+        name: 'user.depots',
+        meta: { layout: 'user', requiresAuth: true },
+        component: () => import('../views/user/MyRequestsView.vue'),
+      },
+      {
+        path: 'depots/nouveau',
+        name: 'user.depots.create',
+        meta: { layout: 'user', requiresAuth: true },
+        component: () => import('../views/user/DepotRequestFormView.vue'),
+      },
+    ],
+  },
 
   // ─────────────────────────────────────────────────────────
   // ESPACE ADMIN  →  layout: 'admin' (sidebar AdminLayout)
@@ -118,23 +117,32 @@ const routes = [
         name: 'admin.decision',
         component: () => import('../views/admin/FinalDecisionView.vue'),
       },
+
+      {
+        path: 'demandes-attente',
+        name: 'admin.pending',
+        component: () => import('../views/admin/PendingRequestsView.vue'),
+      },
+      {
+        path: 'assignation',
+        name: 'admin.assignation',
+        component: () => import('../views/admin/AssignmentView.vue'),
+      },
+      
+      // Catégories
+      {
+        path: 'categories',
+        name: 'admin.categories',
+        component: () => import('../views/admin/categories/CategoriesListView.vue'),
+      },
+      {
+        path: 'categories/nouvelle',
+        name: 'admin.categories.create',
+        component: () => import('../views/admin/categories/CategoryCreateView.vue'),
+      },
     ],
   },
 
-  //_______________________________________________________________
-  //admin/children
-  //______________________________________________________
-  // Catégories
-  {
-    path: '/categories',
-    name: 'admin.categories',
-    component: () => import('../views/admin/categories/CategoriesListView.vue'),
-  },
-  {
-    path: '/categories/nouvelle',
-    name: 'admin.categories.create',
-    component: () => import('../views/admin/categories/CategoryCreateView.vue'),
-  },
 
   // ─────────────────────────────────────────────────────────
   // ESPACE GESTIONNAIRE  →  layout: 'admin' (même sidebar)

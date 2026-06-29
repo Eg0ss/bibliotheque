@@ -18,6 +18,7 @@ const sidebarItems = computed(() => {
   if (role === 'admin') {
     return [
       { type: 'link',  to: '/admin',            label: 'Tableau de bord'  },
+      { type: 'link', to: '/admin/demandes-attente',  label: 'Demandes en attente' },
       {
         type    : 'group',
         name    : 'initialisation',

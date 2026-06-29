@@ -6,17 +6,19 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\TypeController;
 use App\Http\Controllers\Api\DepotRequestController;
+use App\Http\Controllers\Api\AdminDepotRequestController;
+use App\Http\Controllers\Api\GestionnaireController;
 
 /*
 |--------------------------------------------------------------------------
 | Routes publiques (sans authentification)
 |--------------------------------------------------------------------------
 */
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 
 // Types et catégories accessibles sans connexion
-// (catalogue public + formulaires visiteurs)
 Route::get('/types',      [TypeController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'all']);
 
@@ -41,12 +43,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
         Route::get('roles', [UserController::class, 'getRoles']);
 
-        // Catégories (avec pagination pour le back-office)
+        // Catégories & Types 
         Route::get('categories/all', [CategoryController::class, 'all']);
         Route::apiResource('categories', CategoryController::class);
-
-        // Types (avec pagination pour le back-office)
         Route::apiResource('types', TypeController::class);
+
+        // ── Demandes en attente ──────────────────────────────────────
+        Route::get('depot-requests',   [AdminDepotRequestController::class, 'index']);
+
+        // ── Assignations ─────────────────────────────────────────────
+        Route::get('assignments',      [AdminDepotRequestController::class, 'assignments']);
+        Route::post('assignments',     [AdminDepotRequestController::class, 'assign']);
+        Route::get('gestionnaires',    [AdminDepotRequestController::class, 'gestionnaires']);
     });
 
     /*
@@ -59,5 +67,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('depot-requests',      [DepotRequestController::class, 'index']);
         Route::post('depot-requests',     [DepotRequestController::class, 'store']);
         Route::get('depot-requests/{id}', [DepotRequestController::class, 'show']);
+    });
+
+    /*
+|----------------------------------------------------------------------
+| Routes Gestionnaire
+|----------------------------------------------------------------------
+*/
+    Route::prefix('gestionnaire')->group(function () {
+        // Documents assignés au gestionnaire connecté
+        Route::get('documents', [GestionnaireController::class, 'documents']);
     });
 });

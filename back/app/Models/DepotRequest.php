@@ -13,15 +13,19 @@ class DepotRequest extends Model
         'rejection_reason',
     ];
 
-    // L'utilisateur qui a fait la demande
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // La référence documentaire associée
     public function reference()
     {
         return $this->belongsTo(DocumentReference::class, 'reference_id');
+    }
+
+    // Une demande peut avoir une assignation
+    public function assignment()
+    {
+        return $this->hasOne(DocumentAssignment::class);
     }
 }
