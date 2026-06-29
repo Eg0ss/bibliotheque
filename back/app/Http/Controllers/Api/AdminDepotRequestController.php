@@ -20,11 +20,11 @@ class AdminDepotRequestController extends Controller
     public function index()
     {
         $requests = DepotRequest::with([
-                'user:id,name,email',           // demandeur
-                'reference.category:id,name',    // catégorie du document
-                'reference.type:id,name',        // type du document
-                'assignment.assignedTo:id,name', // gestionnaire assigné si déjà assigné
-            ])
+            'user:id,name,email',           // demandeur
+            'reference.category:id,name',    // catégorie du document
+            'reference.type:id,name',        // type du document
+            'assignment.assignedTo:id,name', // gestionnaire assigné si déjà assigné
+        ])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -39,11 +39,11 @@ class AdminDepotRequestController extends Controller
     public function assignments()
     {
         $assignments = DocumentAssignment::with([
-                'depotRequest.reference:id,title,author',
-                'depotRequest.user:id,name,email',
-                'assignedBy:id,name',
-                'assignedTo:id,name',
-            ])
+            'depotRequest.reference:id,title,author',
+            'depotRequest.user:id,name,email',
+            'assignedBy:id,name',
+            'assignedTo:id,name',
+        ])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -106,40 +106,41 @@ class AdminDepotRequestController extends Controller
     }
 
     /**
- * DEMANDES TRAITÉES — références validées ou rejetées par les gestionnaires
- * Route : GET /api/admin/depot-requests/traites
- * Affiche les demandes avec status = 'manager_approved' ou 'rejected'
- */
-public function traites()
-{
-    $requests = DepotRequest::with([
+     * DEMANDES TRAITÉES — références validées ou rejetées par les gestionnaires
+     * Route : GET /api/admin/depot-requests/traites
+     * Affiche les demandes avec status = 'manager_approved' ou 'rejected'
+     */
+    public function traites()
+    {
+        $requests = DepotRequest::with([
             'user:id,name,email',
             'reference.category:id,name',
             'reference.type:id,name',
             'assignment.assignedTo:id,name',
             'latestValidationStep.performer:id,name',
         ])
-        ->whereIn('status', ['manager_approved', 'rejected'])
-        ->orderBy('updated_at', 'desc')
-        ->paginate(15);
+            ->whereIn('status', ['manager_approved', 'rejected'])
+            ->orderBy('updated_at', 'desc')
+            ->paginate(15);
 
-    return response()->json($requests);
-}
+        return response()->json($requests);
+    }
 
-/**
- * DÉCISION FINALE de l'admin sur une demande traitée par le gestionnaire
- * Route : POST /api/admin/depot-requests/{id}/decision
- *
- * body : { decision: 'published' | 'admin_rejected' | 'resubmitted', comment: '...' }
- */
-public function finalDecision(Request $request, string $id)
+    /**
+     * DÉCISION FINALE de l'admin sur une demande traitée par le gestionnaire
+     * Route : POST /api/admin/depot-requests/{id}/decision
+     *
+     * body : { decision: 'published' | 'admin_rejected' | 'resubmitted', comment: '...' }
+     */
+    public function finalDecision(Request $request, string $id)
 {
     $validated = $request->validate([
         'decision' => ['required', 'in:published,admin_rejected,resubmitted'],
         'comment'  => ['nullable', 'string', 'max:2000'],
     ]);
 
-    $depotRequest = DepotRequest::with('assignment')->findOrFail($id);
+    // IMPORTANT : on ajoute 'reference' au with() pour pouvoir accéder à $depotRequest->reference
+    $depotRequest = DepotRequest::with(['assignment', 'reference'])->findOrFail($id);
 
     // Enregistrer la décision admin dans validation_steps
     ValidationStep::create([
@@ -150,14 +151,30 @@ public function finalDecision(Request $request, string $id)
         'comment'          => $validated['comment'] ?? null,
     ]);
 
-    // Mettre à jour le statut selon la décision
+    // Correspondance décision → statut pour depot_requests
     $statusMap = [
         'published'      => 'published',
         'admin_rejected' => 'rejected',
-        'resubmitted'    => 'assigned',  // repart au gestionnaire
+        'resubmitted'    => 'assigned',
     ];
 
+    // 1. Mise à jour de la DEMANDE (depot_requests)
     $depotRequest->update(['status' => $statusMap[$validated['decision']]]);
+
+    // 2. Mise à jour de la RÉFÉRENCE (document_references)
+    //    Le catalogue /catalogue lit WHERE status = 'published' sur cette table.
+    //    Sans cette mise à jour, le catalogue reste vide même après publication.
+    if ($depotRequest->reference) {
+        $referenceStatusMap = [
+            'published'      => 'published',
+            'admin_rejected' => 'rejected',
+            'resubmitted'    => 'assigned',
+        ];
+
+        $depotRequest->reference->update([
+            'status' => $referenceStatusMap[$validated['decision']]
+        ]);
+    }
 
     $messages = [
         'published'      => 'Référence publiée avec succès.',
