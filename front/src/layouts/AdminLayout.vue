@@ -19,6 +19,7 @@ const sidebarItems = computed(() => {
     return [
       { type: 'link',  to: '/admin',            label: 'Tableau de bord'  },
       { type: 'link', to: '/admin/demandes-attente',  label: 'Demandes en attente' },
+      { type: 'link', to: '/admin/demandes-traitees',  label: 'Demandes traitées'   },
       {
         type    : 'group',
         name    : 'initialisation',
@@ -39,7 +40,7 @@ const sidebarItems = computed(() => {
     return [
       { type: 'link', to: '/gestionnaire',             label: 'Tableau de bord' },
       { type: 'link', to: '/gestionnaire/documents',   label: 'Documents à vérifier' },
-      { type: 'link', to: '/gestionnaire/parametres',  label: 'Mes validations' },
+      { type: 'link', to: '/gestionnaire/validations',  label: 'Mes validations' },
     ]
   }
 

@@ -128,7 +128,7 @@ const routes = [
         name: 'admin.assignation',
         component: () => import('../views/admin/AssignmentView.vue'),
       },
-      
+
       // Catégories
       {
         path: 'categories',
@@ -140,9 +140,15 @@ const routes = [
         name: 'admin.categories.create',
         component: () => import('../views/admin/categories/CategoryCreateView.vue'),
       },
+      {
+        // ← NOUVELLE route demandes traitées
+        path: 'demandes-traitees',
+        name: 'admin.traites',
+        meta: { layout: 'admin', requiresAuth: true, role: 'admin' },
+        component: () => import('../views/admin/ProcessedRequestsView.vue'),
+      },
     ],
   },
-
 
   // ─────────────────────────────────────────────────────────
   // ESPACE GESTIONNAIRE  →  layout: 'admin' (même sidebar)
@@ -154,17 +160,28 @@ const routes = [
       {
         path: '',
         name: 'gestionnaire.dashboard',
+        meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },
         component: () => import('../views/manager/PendingDocumentsView.vue'),
       },
       {
         path: 'documents',
         name: 'gestionnaire.documents',
+        meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },
         component: () => import('../views/manager/PendingDocumentsView.vue'),
       },
       {
-        path: 'parametres',
-        name: 'gestionnaire.parametres',
-        component: () => import('../views/manager/ValidationParamsView.vue'),
+        // ← NOUVELLE route détail document
+        path: 'documents/:id',
+        name: 'gestionnaire.documents.show',
+        meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },
+        component: () => import('../views/manager/DocumentDetailView.vue'),
+      },
+      {
+        // ← NOUVELLE route mes validations
+        path: 'validations',
+        name: 'gestionnaire.validations',
+        meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },
+        component: () => import('../views/manager/MyValidationsView.vue'),
       },
     ],
   },

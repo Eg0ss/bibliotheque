@@ -28,4 +28,16 @@ class DepotRequest extends Model
     {
         return $this->hasOne(DocumentAssignment::class);
     }
+
+    // Toutes les étapes de validation de cette demande
+    public function validationSteps()
+    {
+        return $this->hasMany(ValidationStep::class);
+    }
+
+    // La dernière étape de validation (la plus récente)
+    public function latestValidationStep()
+    {
+        return $this->hasOne(ValidationStep::class)->latestOfMany();
+    }
 }

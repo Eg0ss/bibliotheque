@@ -19,10 +19,10 @@ function formatDate(d) {
 
 // Badge de statut de la demande
 const statusConfig = {
-  pending  : { label: 'En attente',   bg: 'bg-gray-100',   text: 'text-gray-600'  },
-  assigned : { label: 'Assignée',     bg: 'bg-blue-100',   text: 'text-blue-700'  },
-  rejected : { label: 'Rejetée',      bg: 'bg-red-100',    text: 'text-red-700'   },
-  published: { label: 'Publiée',      bg: 'bg-green-100',  text: 'text-green-700' },
+  pending: { label: 'En attente', bg: 'bg-gray-100', text: 'text-gray-600' },
+  assigned: { label: 'Assignée', bg: 'bg-blue-100', text: 'text-blue-700' },
+  rejected: { label: 'Rejetée', bg: 'bg-red-100', text: 'text-red-700' },
+  published: { label: 'Publiée', bg: 'bg-green-100', text: 'text-green-700' },
 }
 
 function getStatus(status) {
@@ -55,11 +55,8 @@ function getStatus(status) {
 
     <!-- Liste des assignations -->
     <div v-else class="space-y-4">
-      <div
-        v-for="assignment in store.documents"
-        :key="assignment.id"
-        class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow"
-      >
+      <div v-for="assignment in store.documents" :key="assignment.id"
+        class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
         <div class="flex items-start justify-between gap-4">
 
           <!-- Infos du document -->
@@ -98,25 +95,16 @@ function getStatus(status) {
             </div>
 
             <!-- Instructions de l'admin -->
-            <div
-              v-if="assignment.instructions"
-              class="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800"
-            >
+            <div v-if="assignment.instructions"
+              class="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
               <span class="font-medium">📝 Instructions de l'admin :</span>
               {{ assignment.instructions }}
             </div>
 
             <!-- Fichiers joints -->
-            <div
-              v-if="assignment.depot_request?.reference?.documents?.length"
-              class="mt-3 flex flex-wrap gap-2"
-            >
-              <span
-                v-for="doc in assignment.depot_request.reference.documents"
-                :key="doc.id"
-                class="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600
-                       px-2 py-1 rounded-full"
-              >
+            <div v-if="assignment.depot_request?.reference?.documents?.length" class="mt-3 flex flex-wrap gap-2">
+              <span v-for="doc in assignment.depot_request.reference.documents" :key="doc.id" class="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600
+                       px-2 py-1 rounded-full">
                 📄 {{ doc.original_name ?? 'Fichier joint' }}
               </span>
             </div>
@@ -126,21 +114,16 @@ function getStatus(status) {
 
           </div>
 
-          <!-- Colonne droite : statut + assigné par -->
+          <!-- Colonne droite : statut + assigné par + bouton -->
           <div class="flex flex-col items-end gap-2 flex-shrink-0">
 
-            <!-- Badge statut de la demande -->
-            <span
-              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-              :class="[
-                getStatus(assignment.depot_request?.status).bg,
-                getStatus(assignment.depot_request?.status).text
-              ]"
-            >
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" :class="[
+              getStatus(assignment.depot_request?.status).bg,
+              getStatus(assignment.depot_request?.status).text
+            ]">
               {{ getStatus(assignment.depot_request?.status).label }}
             </span>
 
-            <!-- Assigné par -->
             <span class="text-xs text-gray-400">
               Assigné par
               <span class="font-medium text-gray-500">
@@ -148,32 +131,31 @@ function getStatus(status) {
               </span>
             </span>
 
+            <!-- Bouton Voir → page détail -->
+            <RouterLink :to="`/gestionnaire/documents/${assignment.id}`"
+              class="mt-1 px-4 py-1.5 bg-[#042C53] text-white text-xs font-medium rounded-lg hover:bg-[#0C447C] transition">
+              👁 Voir
+            </RouterLink>
+
           </div>
         </div>
       </div>
 
       <!-- Pagination -->
-      <div
-        v-if="store.pagination && store.pagination.last_page > 1"
-        class="flex items-center justify-between pt-2 text-sm text-gray-500"
-      >
+      <div v-if="store.pagination && store.pagination.last_page > 1"
+        class="flex items-center justify-between pt-2 text-sm text-gray-500">
         <span>
           Page {{ store.pagination.current_page }} / {{ store.pagination.last_page }}
           ({{ store.pagination.total }} document{{ store.pagination.total > 1 ? 's' : '' }})
         </span>
         <div class="flex gap-2">
-          <button
-            @click="goToPage(store.pagination.current_page - 1)"
-            :disabled="store.pagination.current_page === 1"
-            class="px-3 py-1.5 rounded-lg border hover:bg-gray-50 disabled:opacity-40 transition"
-          >
+          <button @click="goToPage(store.pagination.current_page - 1)" :disabled="store.pagination.current_page === 1"
+            class="px-3 py-1.5 rounded-lg border hover:bg-gray-50 disabled:opacity-40 transition">
             ← Précédent
           </button>
-          <button
-            @click="goToPage(store.pagination.current_page + 1)"
+          <button @click="goToPage(store.pagination.current_page + 1)"
             :disabled="store.pagination.current_page === store.pagination.last_page"
-            class="px-3 py-1.5 rounded-lg border hover:bg-gray-50 disabled:opacity-40 transition"
-          >
+            class="px-3 py-1.5 rounded-lg border hover:bg-gray-50 disabled:opacity-40 transition">
             Suivant →
           </button>
         </div>
