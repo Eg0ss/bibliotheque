@@ -8,13 +8,15 @@ use App\Http\Controllers\Api\TypeController;
 use App\Http\Controllers\Api\DepotRequestController;
 use App\Http\Controllers\Api\AdminDepotRequestController;
 use App\Http\Controllers\Api\GestionnaireController;
+use App\Http\Controllers\Api\ReferenceController;
 
 // ── Routes publiques ─────────────────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 Route::get('/types',      [TypeController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'all']);
-
+Route::get('/references',      [ReferenceController::class, 'index']); // Liste publiée
+Route::get('/references/{id}', [ReferenceController::class, 'show']);  // Détail
 // ── Routes protégées ─────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
