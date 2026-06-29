@@ -39,7 +39,7 @@ const sidebarItems = computed(() => {
     return [
       { type: 'link', to: '/gestionnaire',             label: 'Tableau de bord' },
       { type: 'link', to: '/gestionnaire/documents',   label: 'Documents à vérifier' },
-      { type: 'link', to: '/gestionnaire/parametres',  label: 'Mes validation' },
+      { type: 'link', to: '/gestionnaire/parametres',  label: 'Mes validations' },
     ]
   }
 
