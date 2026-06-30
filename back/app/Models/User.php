@@ -30,7 +30,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed', 
+            'password'          => 'hashed',
             'is_active'         => 'boolean',
         ];
     }
@@ -39,5 +39,33 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Vérifie si l'utilisateur a un rôle donné
+     * Usage : $user->hasRole('admin')
+     */
+    public function hasRole(string $slug): bool
+    {
+        // On charge la relation role si pas déjà chargée (lazy loading)
+        return $this->role?->slug === $slug;
+    }
+
+    /**
+     * Raccourcis pratiques pour les vérifications courantes
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isGestionnaire(): bool
+    {
+        return $this->hasRole('gestionnaire');
+    }
+
+    public function isRH(): bool
+    {
+        return $this->hasRole('rh');
     }
 }

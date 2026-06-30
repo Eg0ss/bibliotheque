@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
-use App\Http\Requests\User\UpdateUserRequest;  // ← on l'utilise maintenant
+use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
@@ -12,52 +12,60 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-   /**
- * LISTER les utilisateurs avec recherche et filtres
- * Route : GET /api/admin/users?search=jean&status=1&role_id=2&page=1
- */
-public function index(Request $request)
-{
-    $query = User::with('role')
-        ->orderBy('created_at', 'desc');
+    /**
+     * LISTER les utilisateurs
+     * GET /api/admin/users
+     *
+     * $this->authorize('viewAny', User::class)
+     * → appelle UserPolicy::viewAny($userConnecte)
+     * → Gate::before laisse passer l'admin, bloque les autres → 403
+     */
+    public function index(Request $request)
+    {
+        // Vérification de droit : seul l'admin peut lister tous les users
+        $this->authorize('viewAny', User::class);
 
-    // Recherche par nom ou email
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhere('email', 'LIKE', "%{$search}%");
-        });
+        $query = User::with('role')->orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('is_active', (bool) $request->status);
+        }
+
+        if ($request->filled('role_id')) {
+            $query->where('role_id', $request->role_id);
+        }
+
+        $users = $query->paginate(15)->appends($request->query());
+
+        return UserResource::collection($users);
     }
-
-    // Filtre par statut actif/inactif
-    if ($request->has('status') && $request->status !== '') {
-        $query->where('is_active', (bool) $request->status);
-    }
-
-    // Filtre par rôle
-    if ($request->filled('role_id')) {
-        $query->where('role_id', $request->role_id);
-    }
-
-    $users = $query->paginate(15)->appends($request->query());
-
-    return UserResource::collection($users);
-}
 
     /**
-     * CRÉER un nouveau compte utilisateur
-     * Route : POST /api/admin/users
-     * Utilisé par le formulaire UserCreateView.vue
+     * CRÉER un utilisateur
+     * POST /api/admin/users
+     *
+     * authorize('create', User::class)
+     * → UserPolicy::create($userConnecte)
+     * → Gate::before laisse passer l'admin
      */
     public function store(StoreUserRequest $request)
     {
+        $this->authorize('create', User::class);
+
         $user = User::create([
             'name'      => $request->validated()['name'],
             'email'     => $request->validated()['email'],
             'password'  => $request->validated()['password'],
             'role_id'   => $request->validated()['role_id'],
-            'is_active' => $request->validated()['is_active'],
+            'is_active' => true,
         ]);
 
         $user->load('role');
@@ -69,48 +77,47 @@ public function index(Request $request)
     }
 
     /**
-     * VOIR un utilisateur précis
-     * Route : GET /api/admin/users/{user}
-     * Utilisé par UserShowView.vue au chargement de la page
+     * VOIR un utilisateur
+     * GET /api/admin/users/{user}
+     *
+     * authorize('view', $foundUser)
+     * → UserPolicy::view($userConnecte, $foundUser)
+     * → Admin : Gate::before → OK
+     * → Autre : OK seulement si c'est son propre profil
      */
     public function show(string $user)
     {
-        // findOrFail lance automatiquement une erreur 404 si l'id n'existe pas
         $foundUser = User::with('role')->findOrFail($user);
+
+        $this->authorize('view', $foundUser);
 
         return new UserResource($foundUser);
     }
 
     /**
-     * MODIFIER un compte utilisateur
-     * Route : PUT /api/admin/users/{user}
-     * Utilisé par le formulaire dans UserShowView.vue
+     * MODIFIER un utilisateur
+     * PUT /api/admin/users/{user}
      *
-     * UpdateUserRequest valide automatiquement les données AVANT d'entrer ici
+     * authorize('update', $foundUser)
+     * → UserPolicy::update($userConnecte, $foundUser)
      */
     public function update(UpdateUserRequest $request, string $user)
     {
-        // On récupère le user (404 automatique si inexistant)
         $foundUser = User::findOrFail($user);
 
-        // On prépare les données à mettre à jour
-        // array_filter supprime les valeurs null/vides pour ne pas écraser inutilement
+        $this->authorize('update', $foundUser);
+
         $data = [
             'name'    => $request->validated()['name'],
             'email'   => $request->validated()['email'],
             'role_id' => $request->validated()['role_id'],
         ];
 
-        // Le mot de passe est optionnel : on ne le met à jour que s'il est fourni
         if (!empty($request->validated()['password'])) {
             $data['password'] = $request->validated()['password'];
-            // Pas besoin de hasher manuellement : le cast 'hashed' dans User.php s'en charge
         }
 
-        // Mise à jour en base de données
         $foundUser->update($data);
-
-        // On recharge les relations pour la réponse JSON
         $foundUser->load('role');
 
         return response()->json([
@@ -120,23 +127,26 @@ public function index(Request $request)
     }
 
     /**
-     * ACTIVER / DÉSACTIVER un compte
-     * Route : PATCH /api/admin/users/{id}/toggle-status
-     * Le "toggle" inverse simplement la valeur actuelle de is_active
+     * ACTIVER / DÉSACTIVER
+     * PATCH /api/admin/users/{id}/toggle-status
+     *
+     * authorize('toggleStatus', $user)
+     * → UserPolicy::toggleStatus($userConnecte, $user)
+     * → Gate::before laisse passer l'admin
      */
     public function toggleStatus(string $id)
     {
         $user = User::findOrFail($id);
 
-        // Sécurité : un admin ne peut pas désactiver son propre compte
-        if ((int)$id === auth()->id()) {
+        $this->authorize('toggleStatus', $user);
+
+        if ($user->id === auth()->id()) {
             return response()->json([
                 'message' => 'Vous ne pouvez pas modifier le statut de votre propre compte.',
             ], 403);
         }
 
         $user->update(['is_active' => !$user->is_active]);
-
         $statusLabel = $user->is_active ? 'activé' : 'désactivé';
 
         return response()->json([
@@ -146,18 +156,23 @@ public function index(Request $request)
     }
 
     /**
-     * SUPPRIMER un compte
-     * Route : DELETE /api/admin/users/{id}
+     * SUPPRIMER un utilisateur
+     * DELETE /api/admin/users/{id}
+     *
+     * authorize('delete', $user)
+     * → UserPolicy::delete($userConnecte, $user)
+     * → Gate::before laisse passer l'admin
      */
     public function destroy(string $id)
     {
         $user = User::findOrFail($id);
 
-        // Sécurité : on empêche un admin de se supprimer lui-même
+        $this->authorize('delete', $user);
+
         if ($user->id === auth()->id()) {
             return response()->json([
                 'message' => 'Vous ne pouvez pas supprimer votre propre compte.',
-            ], 403); // 403 = Forbidden
+            ], 403);
         }
 
         $user->delete();
@@ -168,16 +183,12 @@ public function index(Request $request)
     }
 
     /**
-     * LISTER les rôles disponibles
-     * Route : GET /api/admin/roles
-     * Utilisé par le <select> des formulaires
+     * LISTE DES RÔLES
+     * GET /api/admin/roles
      */
     public function getRoles()
     {
         $roles = Role::orderBy('name')->get(['id', 'name', 'slug']);
-
-        return response()->json([
-            'data' => $roles
-        ]);
+        return response()->json(['data' => $roles]);
     }
 }
