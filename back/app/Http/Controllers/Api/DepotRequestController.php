@@ -124,4 +124,39 @@ class DepotRequestController extends Controller
 
         return response()->json(['data' => $depotRequest]);
     }
+
+    /**
+ * STATISTIQUES personnelles de l'utilisateur connecté
+ * GET /api/user/stats
+ *
+ * Retourne les compteurs par statut pour le tableau de bord
+ */
+public function stats()
+{
+    $userId = Auth::id();
+
+    // Une seule requête SQL avec GROUP BY — plus performant
+    // que 4 requêtes COUNT séparées
+    $rows = DepotRequest::where('user_id', $userId)
+        ->selectRaw('status, COUNT(*) as total')
+        ->groupBy('status')
+        ->pluck('total', 'status');
+
+    // On structure la réponse avec des valeurs par défaut à 0
+    // si un statut n'a aucune entrée (absent du GROUP BY)
+    return response()->json([
+        'data' => [
+            'total'            => $rows->sum(),
+            'pending'          => $rows->get('pending', 0),
+            'assigned'         => $rows->get('assigned', 0),
+            'manager_approved' => $rows->get('manager_approved', 0),
+            'published'        => $rows->get('published', 0),
+            'rejected'         => $rows->get('rejected', 0),
+            // En attente = tout ce qui n'est pas encore publié ni rejeté
+            'in_progress'      => $rows->filter(
+                fn($v, $k) => !in_array($k, ['published', 'rejected'])
+            )->sum(),
+        ]
+    ]);
+}
 }

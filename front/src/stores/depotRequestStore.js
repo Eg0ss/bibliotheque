@@ -14,6 +14,15 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
   const types = ref([]) // pour le <select> type
   const loading = ref(false)
   const errors = ref({})
+  const stats = ref({
+  total           : 0,
+  pending         : 0,
+  assigned        : 0,
+  manager_approved: 0,
+  published       : 0,
+  rejected        : 0,
+  in_progress     : 0,
+})
 
   const toast = useToast()
 
@@ -98,6 +107,16 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
     }
   }
 
+  // ── Charger les statistiques personnelles ─────────────────────────────
+async function fetchStats() {
+  try {
+    const res  = await depotRequestApi.getStats()
+    stats.value = res.data.data
+  } catch {
+    // Silencieux : les stats ne doivent pas bloquer le chargement
+  }
+}
+
   return {
     myRequests,
     pagination,
@@ -105,8 +124,10 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
     types,
     loading,
     errors,
+    stats,
     fetchFormOptions,
     submitRequest,
     fetchMyRequests,
+    fetchStats,
   }
 })

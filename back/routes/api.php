@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('depot-requests',      [DepotRequestController::class, 'index']);
         Route::post('depot-requests',     [DepotRequestController::class, 'store']);
         Route::get('depot-requests/{id}', [DepotRequestController::class, 'show']);
+        Route::get('stats', [DepotRequestController::class, 'stats']);
     });
 
     // ── GESTIONNAIRE ─────────────────────────────────────────────────────

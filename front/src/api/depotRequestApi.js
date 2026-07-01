@@ -3,7 +3,6 @@
 import apiClient from './axios'
 
 const depotRequestApi = {
-
   /**
    * Soumettre une nouvelle demande de dépôt
    * On envoie FormData (pas JSON) car il y a des fichiers à uploader
@@ -44,6 +43,11 @@ const depotRequestApi = {
    */
   getTypes() {
     return apiClient.get('/api/types')
+  },
+
+  // Statistiques personnelles pour le tableau de bord
+  getStats() {
+    return apiClient.get('/api/user/stats')
   },
 }
 

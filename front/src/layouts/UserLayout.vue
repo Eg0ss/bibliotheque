@@ -17,6 +17,11 @@ function toggleGroup(name) {
 const sidebarItems = [
   {
     type: 'link',
+    to: '/mon-espace',
+    label: 'Tableau de bord',
+  },
+  {
+    type: 'link',
     to: '/mon-espace/depots',
     label: 'Mes dépôts',
   },
@@ -88,7 +93,7 @@ async function handleLogout() {
         <p class="text-xs text-white/50 mt-1 ml-10">Espace personnel</p>
       </div>
 
-      
+
       <!-- Infos utilisateur connecté -->
       <div class="px-5 py-4 border-b border-white/10 bg-white/5">
         <!-- Avatar initiales -->
@@ -109,30 +114,34 @@ async function handleLogout() {
         </div>
       </div>
 
-        <!-- ── Bouton retour à l'accueil publique ─────────────────────────────
+      <!-- ── Bouton retour à l'accueil publique ─────────────────────────────
        Bien visible, séparé du reste, pour basculer facilement
        vers le catalogue public sans se déconnecter -->
-        <div class="px-4 pt-4">
-          <RouterLink to="/" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg
+      <div class="px-4 pt-4">
+        <RouterLink to="/" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg
              bg-white/10 hover:bg-white/20 text-white text-sm font-medium
              border border-white/20 transition-all">
-            <!-- <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+          <!-- <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg> -->
-            Retour à l'accueil
-          </RouterLink>
-        </div>
-        
+          Retour à l'accueil
+        </RouterLink>
+      </div>
+
       <!-- Navigation -->
       <nav class="flex-1 p-4 space-y-1">
         <template v-for="item in sidebarItems" :key="item.to ?? item.name">
 
           <!-- Lien simple -->
           <RouterLink v-if="item.type === 'link'" :to="item.to" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
-                   text-white/80 hover:bg-white/10 hover:text-white transition-all"
-            :class="{ 'bg-white/20 text-white font-semibold': route.path === item.to }">
+                   text-white/80 hover:bg-white/10 hover:text-white transition-all" :class="{
+                    'bg-white/20 text-white font-semibold':
+                      item.to === '/mon-espace'
+                        ? route.path === '/mon-espace'          
+                        : route.path.startsWith(item.to)       
+                  }">
             <span class="text-base">{{ item.icon }}</span>
             {{ item.label }}
           </RouterLink>

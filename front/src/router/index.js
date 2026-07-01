@@ -53,6 +53,12 @@ const routes = [
     meta: { layout: 'user', requiresAuth: true },
     children: [
       {
+        path: '',
+        name: 'user.dashboard',
+        meta: { layout: 'user', requiresAuth: true },
+        component: () => import('../views/user/DashboardView/DashboardView.vue'),
+      },
+      {
         path: 'profil',
         name: 'user.profil',
         meta: { layout: 'user', requiresAuth: true },
