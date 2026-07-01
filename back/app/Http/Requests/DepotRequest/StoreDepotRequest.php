@@ -32,7 +32,7 @@ class StoreDepotRequest extends FormRequest
             'file'             => ['nullable', 'file', 'mimes:pdf', 'max:20480'], // 20 Mo max
 
             // ── Image de couverture optionnelle ───────────────────────
-            'cover_image'      => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'cover_image'      => ['nullable', 'image', 'max:5120'],
         ];
     }
 

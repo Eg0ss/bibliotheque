@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { RouterLink, useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
-const route     = useRoute()
+const route = useRoute()
 
 // Gestion du menu déroulant (même logique que AdminLayout)
 const openGroup = ref(null)
@@ -16,29 +16,29 @@ function toggleGroup(name) {
 // Menus de l'espace utilisateur connecté
 const sidebarItems = [
   {
-    type : 'link',
-    to   : '/mon-espace/depots',
+    type: 'link',
+    to: '/mon-espace/depots',
     label: 'Mes dépôts',
   },
+  // {
+  //   type: 'group',
+  //   name: 'catalogue',
+  //   label: 'Catalogue',
+  //   children: [
+  //     { to: '/catalogue', label: 'Parcourir' },
+  //     { to: '/recherche', label: 'Recherche avancée' },
+  //     { to: '/statistiques', label: 'Statistiques' },
+  //   ],
+  // },
   {
-    type    : 'group',
-    name    : 'catalogue',
-    label   : 'Catalogue',
-    children: [
-      { to: '/catalogue',  label: 'Parcourir'          },
-      { to: '/recherche',  label: 'Recherche avancée'  },
-      { to: '/statistiques', label: 'Statistiques'     },
-    ],
-  },
-  {
-    type : 'link',
-    to   : '/mon-espace/depots/nouveau',
+    type: 'link',
+    to: '/mon-espace/depots/nouveau',
     label: 'Soumettre une demande',
-    
+
   },
   {
-    type : 'link',
-    to   : '/mon-espace/profil',
+    type: 'link',
+    to: '/mon-espace/profil',
     label: 'Mon profil'
   },
 ]
@@ -75,8 +75,8 @@ async function handleLogout() {
       <div class="p-5 border-b border-white/20">
         <RouterLink to="/" class="flex items-center gap-2">
           <div class="flex h-8 w-8 items-center justify-center rounded-md bg-white/20">
-            <svg class="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <svg class="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 0 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 1 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
             </svg>
@@ -88,6 +88,7 @@ async function handleLogout() {
         <p class="text-xs text-white/50 mt-1 ml-10">Espace personnel</p>
       </div>
 
+      
       <!-- Infos utilisateur connecté -->
       <div class="px-5 py-4 border-b border-white/10 bg-white/5">
         <!-- Avatar initiales -->
@@ -108,57 +109,55 @@ async function handleLogout() {
         </div>
       </div>
 
+        <!-- ── Bouton retour à l'accueil publique ─────────────────────────────
+       Bien visible, séparé du reste, pour basculer facilement
+       vers le catalogue public sans se déconnecter -->
+        <div class="px-4 pt-4">
+          <RouterLink to="/" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg
+             bg-white/10 hover:bg-white/20 text-white text-sm font-medium
+             border border-white/20 transition-all">
+            <!-- <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg> -->
+            Retour à l'accueil
+          </RouterLink>
+        </div>
+        
       <!-- Navigation -->
       <nav class="flex-1 p-4 space-y-1">
         <template v-for="item in sidebarItems" :key="item.to ?? item.name">
 
           <!-- Lien simple -->
-          <RouterLink
-            v-if="item.type === 'link'"
-            :to="item.to"
-            class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
+          <RouterLink v-if="item.type === 'link'" :to="item.to" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
                    text-white/80 hover:bg-white/10 hover:text-white transition-all"
-            :class="{ 'bg-white/20 text-white font-semibold': route.path === item.to }"
-          >
+            :class="{ 'bg-white/20 text-white font-semibold': route.path === item.to }">
             <span class="text-base">{{ item.icon }}</span>
             {{ item.label }}
           </RouterLink>
 
           <!-- Groupe déroulant -->
           <div v-else-if="item.type === 'group'">
-            <button
-              @click="toggleGroup(item.name)"
-              class="w-full flex items-center justify-between px-4 py-2.5
-                     rounded-lg text-sm transition-all"
-              :class="openGroup === item.name
-                ? 'bg-white/20 text-white font-semibold'
-                : 'text-white/80 hover:bg-white/10 hover:text-white'"
-            >
+            <button @click="toggleGroup(item.name)" class="w-full flex items-center justify-between px-4 py-2.5
+                     rounded-lg text-sm transition-all" :class="openGroup === item.name
+                      ? 'bg-white/20 text-white font-semibold'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'">
               <span class="flex items-center gap-3">
                 <span class="text-base">{{ item.icon }}</span>
                 {{ item.label }}
               </span>
-              <span
-                class="text-xs transition-transform duration-200 inline-block"
-                :class="openGroup === item.name ? 'rotate-180' : 'rotate-0'"
-              >
+              <span class="text-xs transition-transform duration-200 inline-block"
+                :class="openGroup === item.name ? 'rotate-180' : 'rotate-0'">
                 ▼
               </span>
             </button>
 
             <!-- Sous-menus -->
-            <div
-              v-show="openGroup === item.name"
-              class="mt-1 ml-4 pl-3 border-l border-white/20 space-y-1"
-            >
-              <RouterLink
-                v-for="child in item.children"
-                :key="child.to"
-                :to="child.to"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
+            <div v-show="openGroup === item.name" class="mt-1 ml-4 pl-3 border-l border-white/20 space-y-1">
+              <RouterLink v-for="child in item.children" :key="child.to" :to="child.to" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm
                        text-white/70 hover:bg-white/10 hover:text-white transition-all"
-                :class="{ 'bg-white/15 text-white font-medium': route.path.startsWith(child.to) }"
-              >
+                :class="{ 'bg-white/15 text-white font-medium': route.path.startsWith(child.to) }">
                 <span class="text-sm">{{ child.icon }}</span>
                 {{ child.label }}
               </RouterLink>
@@ -170,11 +169,8 @@ async function handleLogout() {
 
       <!-- Déconnexion -->
       <div class="p-4 border-t border-white/10">
-        <button
-          @click="handleLogout"
-          class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
-                 text-white/70 hover:bg-red-600/30 hover:text-white transition-all"
-        >
+        <button @click="handleLogout" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
+                 text-white/70 hover:bg-red-600/30 hover:text-white transition-all">
           <span></span> Déconnexion
         </button>
       </div>
