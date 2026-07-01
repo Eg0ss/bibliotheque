@@ -168,13 +168,13 @@ function formatDate(d) {
               <select v-model="selectedRequest"
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
                        focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white">
-                <option value="" disabled>— Sélectionner une demande —</option>
+                <option value="" disabled>Sélectionner une demande</option>
                 <option
                   v-for="req in store.pendingRequests.filter(r => r.status === 'pending')"
                   :key="req.id"
                   :value="req.id"
                 >
-                  #{{ req.id }} — {{ req.reference?.title ?? '?' }}
+                  {{ req.id }} — {{ req.reference?.title ?? '?' }}
                   ({{ req.user?.name }})
                 </option>
               </select>
@@ -188,9 +188,9 @@ function formatDate(d) {
               <select v-model="selectedGest"
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
                        focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white">
-                <option value="" disabled>— Sélectionner un gestionnaire —</option>
+                <option value="" disabled>Sélectionner un gestionnaire</option>
                 <option v-for="g in store.gestionnaires" :key="g.id" :value="g.id">
-                  {{ g.name }} — {{ g.email }}
+                  {{ g.name }}
                 </option>
               </select>
             </div>

@@ -12,27 +12,36 @@ use Illuminate\Support\Facades\Auth;
 
 class DepotRequestController extends Controller
 {
-    /**
-     * LISTER les demandes de l'utilisateur connecté
-     * GET /api/user/depot-requests
-     *
-     * authorize('viewAny', DepotRequest::class)
-     * → DepotRequestPolicy::viewAny($userConnecte)
-     * → true si le compte est actif
-     */
-    public function index()
-    {
-        $this->authorize('viewAny', DepotRequest::class);
+   /**
+ * LISTER les demandes avec recherche et filtre par statut
+ * GET /api/user/depot-requests?search=social&status=published&page=1
+ */
+public function index(Request $request)
+{
+    $this->authorize('viewAny', DepotRequest::class);
 
-        // Même si viewAny autorise l'accès général, on filtre quand même
-        // sur user_id pour que chacun ne voie QUE ses propres demandes
-        $requests = DepotRequest::with(['reference.category', 'reference.type'])
-            ->where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+    $query = DepotRequest::with(['reference.category', 'reference.type'])
+        ->where('user_id', Auth::id())
+        ->orderBy('created_at', 'desc');
 
-        return response()->json($requests);
+    // Recherche par titre ou auteur de la référence liée
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->whereHas('reference', function ($q) use ($search) {
+            $q->where('title', 'LIKE', "%{$search}%")
+              ->orWhere('author', 'LIKE', "%{$search}%");
+        });
     }
+
+    // Filtre par statut
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    $requests = $query->paginate(10)->appends($request->query());
+
+    return response()->json($requests);
+}
 
     /**
      * SOUMETTRE une nouvelle demande de dépôt

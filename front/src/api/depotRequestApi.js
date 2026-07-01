@@ -15,13 +15,19 @@ const depotRequestApi = {
     })
   },
 
-  /**
-   * Récupérer les demandes de l'utilisateur connecté
-   * @param {number} page - numéro de page
-   */
-  getMyRequests(page = 1) {
-    return apiClient.get('/api/user/depot-requests', { params: { page } })
-  },
+ /**
+ * Récupérer les demandes avec filtres optionnels
+ * @param {number} page
+ * @param {Object} filters - { search, status }
+ */
+getMyRequests(page = 1, filters = {}) {
+  return apiClient.get('/api/user/depot-requests', {
+    params: {
+      page,
+      ...filters,
+    }
+  })
+},
 
   /**
    * Voir le détail d'une demande

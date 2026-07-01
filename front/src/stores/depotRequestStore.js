@@ -14,6 +14,7 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
   const types = ref([]) // pour le <select> type
   const loading = ref(false)
   const errors = ref({})
+
   const stats = ref({
   total           : 0,
   pending         : 0,
@@ -22,6 +23,11 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
   published       : 0,
   rejected        : 0,
   in_progress     : 0,
+})
+
+const filters = ref({
+  search: '',
+  status: '',
 })
 
   const toast = useToast()
@@ -85,27 +91,38 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
   }
 
   // ── Récupérer les demandes de l'utilisateur connecté ─────────────────
-  async function fetchMyRequests(page = 1) {
-    loading.value = true
-    try {
-      const response = await depotRequestApi.getMyRequests(page)
-      myRequests.value = response.data.data
-      pagination.value = {
-        current_page: response.data.current_page,
-        last_page: response.data.last_page,
-        total: response.data.total,
-      }
-    } catch (error) {
-      toast.add({
-        severity: 'error',
-        summary: 'Erreur',
-        detail: 'Impossible de charger vos demandes.',
-        life: 4000,
-      })
-    } finally {
-      loading.value = false
+ async function fetchMyRequests(page = 1) {
+  loading.value = true
+  try {
+    // On nettoie les filtres vides avant d'envoyer
+    const activeFilters = Object.fromEntries(
+      Object.entries(filters.value).filter(([, v]) => v !== '')
+    )
+
+    const response   = await depotRequestApi.getMyRequests(page, activeFilters)
+    myRequests.value = response.data.data
+    pagination.value = {
+      current_page: response.data.current_page,
+      last_page   : response.data.last_page,
+      total       : response.data.total,
     }
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary : 'Erreur',
+      detail  : 'Impossible de charger vos demandes.',
+      life    : 4000,
+    })
+  } finally {
+    loading.value = false
   }
+}
+
+// Réinitialiser les filtres
+function resetFilters() {
+  filters.value = { search: '', status: '' }
+  fetchMyRequests(1)
+}
 
   // ── Charger les statistiques personnelles ─────────────────────────────
 async function fetchStats() {
@@ -125,9 +142,11 @@ async function fetchStats() {
     loading,
     errors,
     stats,
+    filters,
     fetchFormOptions,
     submitRequest,
     fetchMyRequests,
     fetchStats,
+    resetFilters,
   }
 })
