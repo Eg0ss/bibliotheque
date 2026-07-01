@@ -51,7 +51,7 @@ export const useDepotRequestStore = defineStore('depotRequest', () => {
       })
 
       // Rediriger vers la liste des demandes
-      router.push('/mon-espace/depots')
+      router.push({ path: '/mon-espace/depots' })
     } catch (error) {
       if (error.response?.status === 422) {
         // Erreurs de validation Laravel → affichage champ par champ

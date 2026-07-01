@@ -43,61 +43,65 @@ class DepotRequestController extends Controller
      * → bloque les comptes désactivés
      */
     public function store(StoreDepotRequest $request)
-    {
-        $this->authorize('create', DepotRequest::class);
+{
+    $this->authorize('create', DepotRequest::class);
 
-        // ── 1. Stocker le fichier PDF (optionnel) ──────────────────────
-        $filePath = null;
-        if ($request->hasFile('file')) {
-            $filePath = $request->file('file')->store('documents/private', 'local');
-        }
-
-        // ── 2. Stocker l'image de couverture (optionnelle) ─────────────
-        $coverPath = null;
-        if ($request->hasFile('cover_image')) {
-            $coverPath = $request->file('cover_image')->store('covers', 'public');
-        }
-
-        // ── 3. Créer la référence documentaire ──────────────────────────
-        $reference = DocumentReference::create([
-            'title'            => $request->validated()['title'],
-            'author'           => $request->validated()['author'],
-            'publisher'        => $request->validated()['publisher'] ?? null,
-            'publication_year' => $request->validated()['publication_year'] ?? null,
-            'language'         => $request->validated()['language'] ?? 'fr',
-            'isbn'             => $request->validated()['isbn'] ?? null,
-            'abstract'         => $request->validated()['abstract'] ?? null,
-            'category_id'      => $request->validated()['category_id'],
-            'type_id'          => $request->validated()['type_id'],
-            'submitted_by'     => Auth::id(),
-            'status'           => 'pending',
-            'cover_image'      => $coverPath,
-        ]);
-
-        // ── 4. Créer l'entrée Document si fichier fourni ────────────────
-        if ($filePath) {
-            Document::create([
-                'reference_id'  => $reference->id,
-                'file_path'     => $filePath,
-                'original_name' => $request->file('file')->getClientOriginalName(),
-                'mime_type'     => $request->file('file')->getMimeType(),
-                'file_size'     => $request->file('file')->getSize(),
-                'version'       => 1,
-            ]);
-        }
-
-        // ── 5. Créer la demande de dépôt ─────────────────────────────────
-        $depotRequest = DepotRequest::create([
-            'user_id'      => Auth::id(),
-            'reference_id' => $reference->id,
-            'status'       => 'pending',
-        ]);
-
-        return response()->json([
-            'message' => 'Votre demande a été soumise avec succès. Elle sera traitée prochainement.',
-            'data'    => $depotRequest->load('reference'),
-        ], 201);
+    // ── 1. Stocker le fichier PDF (optionnel) ──────────────────────────
+    $filePath = null;
+    if ($request->hasFile('file') && $request->file('file')->isValid()) {
+        // isValid() vérifie qu'il n'y a pas eu d'erreur pendant l'upload
+        $filePath = $request->file('file')->store('documents/private', 'local');
     }
+
+    // ── 2. Stocker l'image de couverture (optionnelle) ─────────────────
+    $coverPath = null;
+    if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
+        $coverPath = $request->file('cover_image')->store('covers', 'public');
+    }
+
+    // ── 3. Créer la référence documentaire ─────────────────────────────
+    $reference = DocumentReference::create([
+        'title'            => $request->validated()['title'],
+        'author'           => $request->validated()['author'],
+        'publisher'        => $request->validated()['publisher'] ?? null,
+        'publication_year' => $request->validated()['publication_year'] ?? null,
+        'language'         => $request->validated()['language'] ?? 'fr',
+        // On convertit la chaîne vide en null pour éviter le conflit unique
+        'isbn'             => !empty($request->validated()['isbn'])
+                                ? $request->validated()['isbn']
+                                : null,
+        'abstract'         => $request->validated()['abstract'] ?? null,
+        'category_id'      => $request->validated()['category_id'],
+        'type_id'          => $request->validated()['type_id'],
+        'submitted_by'     => Auth::id(),
+        'status'           => 'pending',
+        'cover_image'      => $coverPath,
+    ]);
+
+    // ── 4. Créer l'entrée Document si fichier fourni ────────────────────
+    if ($filePath) {
+        Document::create([
+            'reference_id'  => $reference->id,
+            'file_path'     => $filePath,
+            'original_name' => $request->file('file')->getClientOriginalName(),
+            'mime_type'     => $request->file('file')->getMimeType(),
+            'file_size'     => $request->file('file')->getSize(),
+            'version'       => 1,
+        ]);
+    }
+
+    // ── 5. Créer la demande de dépôt ────────────────────────────────────
+    $depotRequest = DepotRequest::create([
+        'user_id'      => Auth::id(),
+        'reference_id' => $reference->id,
+        'status'       => 'pending',
+    ]);
+
+    return response()->json([
+        'message' => 'Votre demande a été soumise avec succès.',
+        'data'    => $depotRequest->load('reference'),
+    ], 201);
+}
 
     /**
      * VOIR une demande précise

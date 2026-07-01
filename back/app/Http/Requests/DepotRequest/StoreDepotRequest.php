@@ -25,7 +25,7 @@ class StoreDepotRequest extends FormRequest
             'publisher'        => ['nullable', 'string', 'max:255'],
             'publication_year' => ['nullable', 'integer', 'min:1900', 'max:' . date('Y')],
             'language'         => ['nullable', 'string', 'max:10'],
-            'isbn'             => ['nullable', 'string', 'max:20'],
+            'isbn' => ['nullable', 'string', 'max:20', 'unique:document_references,isbn'],
             'abstract'         => ['nullable', 'string', 'max:3000'],
 
             // ── Fichier PDF ───────────────────────────────
@@ -51,6 +51,7 @@ class StoreDepotRequest extends FormRequest
             'cover_image.image'    => 'La couverture doit être une image.',
             'cover_image.max'      => 'L\'image ne doit pas dépasser 2 Mo.',
             'publication_year.max' => 'L\'année ne peut pas être dans le futur.',
+            'isbn.unique' => 'Ce numéro ISBN existe déjà dans le catalogue.',
         ];
     }
 }
