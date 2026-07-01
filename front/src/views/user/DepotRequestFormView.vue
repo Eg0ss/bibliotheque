@@ -12,8 +12,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useDepotRequestStore } from '@/stores/depotRequestStore'
+import { useToast } from 'primevue/usetoast'
 
 const store = useDepotRequestStore()
+const toast = useToast()
 
 // Étape active du formulaire (1 ou 2)
 const currentStep = ref(1)
@@ -80,7 +82,12 @@ function removeCover() {
 function nextStep() {
   // Vérification minimale avant de passer à l'étape suivante
   if (!form.title || !form.author || !form.category_id || !form.type_id) {
-    alert('Veuillez remplir les champs obligatoires (Titre, Auteur, Catégorie, Type).')
+    toast.add({
+      severity: 'warn',
+      summary: 'Champs manquants',
+      detail: 'Veuillez remplir les champs obligatoires : Titre, Auteur, Catégorie et Type.',
+      life: 4000,
+    })
     return
   }
   currentStep.value = 2
@@ -314,45 +321,37 @@ function handleSubmit() {
         </div>
 
         <!-- Image de couverture -->
-<div>
-  <label class="block text-sm font-medium text-gray-700 mb-2">
-    Image de couverture
-    <span class="text-gray-400 font-normal ml-1">(optionnel — tous formats acceptés)</span>
-  </label>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Image de couverture
+            <span class="text-gray-400 font-normal ml-1">(optionnel)</span>
+          </label>
 
-  <div class="flex gap-4 items-start">
+          <div class="flex gap-4 items-start">
 
-    <!-- Zone d'upload — vide -->
-    <label
-      v-if="!coverPreview"
-      class="flex flex-col items-center justify-center w-32 h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#042C53] transition flex-shrink-0"
-    >
-      <p class="text-2xl mb-1">🖼️</p>
-      <p class="text-xs text-gray-400 text-center px-2">Ajouter une couverture</p>
-      <!-- accept="image/*" accepte TOUS les formats image sans restriction -->
-      <input id="cover-input" type="file" accept="image/*" class="hidden" @change="onCoverChange" />
-    </label>
+            <!-- Zone d'upload — vide -->
+            <label v-if="!coverPreview"
+              class="flex flex-col items-center justify-center w-32 h-40 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#042C53] transition flex-shrink-0">
+              <p class="text-2xl mb-1">🖼️</p>
+              <p class="text-xs text-gray-400 text-center px-2">Ajouter une couverture</p>
+              <!-- accept="image/*" accepte TOUS les formats image sans restriction -->
+              <input id="cover-input" type="file" accept="image/*" class="hidden" @change="onCoverChange" />
+            </label>
 
-    <!-- Image sélectionnée : aperçu + bouton ✕ -->
-    <div v-else class="relative w-32 h-40 flex-shrink-0">
-      <img
-        :src="coverPreview"
-        class="w-full h-full object-cover rounded-lg border-2 border-[#042C53]"
-        alt="Aperçu couverture"
-      />
-      <!-- Bouton ✕ positionné en haut à droite de l'image -->
-      <button
-        type="button"
-        @click="removeCover"
-        class="absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 rounded-full bg-white border border-gray-300 text-gray-500 hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition shadow-sm"
-        title="Supprimer l'image"
-      >
-        ✕
-      </button>
-    </div>
+            <!-- Image sélectionnée : aperçu + bouton ✕ -->
+            <div v-else class="relative w-32 h-40 flex-shrink-0">
+              <img :src="coverPreview" class="w-full h-full object-cover rounded-lg border-2 border-[#042C53]"
+                alt="Aperçu couverture" />
+              <!-- Bouton ✕ positionné en haut à droite de l'image -->
+              <button type="button" @click="removeCover"
+                class="absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 rounded-full bg-white border border-gray-300 text-gray-500 hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition shadow-sm"
+                title="Supprimer l'image">
+                ✕
+              </button>
+            </div>
 
-    <!-- Infos à droite -->
-    <!-- <div class="text-sm text-gray-500 pt-2">
+            <!-- Infos à droite -->
+            <!-- <div class="text-sm text-gray-500 pt-2">
       <p class="font-medium text-gray-700 mb-1">À savoir :</p>
       <ul class="space-y-1 text-xs text-gray-400">
         <li>✅ Tous formats acceptés</li>
@@ -361,8 +360,8 @@ function handleSubmit() {
       </ul>
     </div> -->
 
-  </div>
-</div>
+          </div>
+        </div>
 
         <!-- Récapitulatif de l'étape 1 -->
         <div class="bg-gray-50 rounded-lg p-4 text-sm">
@@ -371,7 +370,7 @@ function handleSubmit() {
             <p><span class="font-medium">Titre :</span> {{ form.title }}</p>
             <p><span class="font-medium">Auteur :</span> {{ form.author }}</p>
             <p><span class="font-medium">Catégorie :</span> {{store.categories.find(c => c.id ==
-              form.category_id)?.name }}</p>
+              form.category_id)?.name}}</p>
             <p><span class="font-medium">Type :</span> {{store.types.find(t => t.id == form.type_id)?.name}}</p>
           </div>
         </div>
@@ -384,7 +383,7 @@ function handleSubmit() {
           </button>
           <button @click="handleSubmit" :disabled="store.loading"
             class="flex-1 bg-[#042C53] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-[#0C447C] transition disabled:opacity-50">
-            {{ store.loading ? 'Envoi en cours...' : '📤 Soumettre la demande' }}
+            {{ store.loading ? 'Envoi en cours...' : 'Soumettre la demande' }}
           </button>
         </div>
 

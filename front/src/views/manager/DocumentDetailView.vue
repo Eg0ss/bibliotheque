@@ -9,17 +9,19 @@
  *  - Rejeter  → decision = 'manager_rejected' + commentaire obligatoire
  */
 
-import { ref, onMounted }              from 'vue'
-import { useRoute, RouterLink }        from 'vue-router'
-import { useGestionnaireStore }        from '@/stores/gestionnaireStore'
+import { ref, onMounted } from 'vue'
+import { useRoute, RouterLink } from 'vue-router'
+import { useGestionnaireStore } from '@/stores/gestionnaireStore'
+import { useToast } from 'primevue'
 
 const route = useRoute()
 const store = useGestionnaireStore()
+const toast = useToast()
 
 // Contrôle le panneau de décision
 const showDecisionPanel = ref(false)
-const decisionType      = ref('')   // 'manager_approved' | 'manager_rejected'
-const comment           = ref('')
+const decisionType = ref('')   // 'manager_approved' | 'manager_rejected'
+const comment = ref('')
 
 onMounted(() => {
   store.fetchDocument(route.params.id)
@@ -27,15 +29,20 @@ onMounted(() => {
 
 // Ouvrir le panneau avec le bon type de décision
 function openDecision(type) {
-  decisionType.value     = type
-  comment.value          = ''
+  decisionType.value = type
+  comment.value = ''
   showDecisionPanel.value = true
 }
 
 // Confirmer la décision
 function confirmDecision() {
   if (decisionType.value === 'manager_rejected' && !comment.value.trim()) {
-    alert('Un commentaire est obligatoire en cas de rejet.')
+    toast.add({
+      severity: 'warn',
+      summary: 'Commentaire requis',
+      detail: 'Un commentaire est obligatoire en cas de rejet.',
+      life: 4000,
+    })
     return
   }
   store.decide(route.params.id, decisionType.value, comment.value)
@@ -54,16 +61,14 @@ function formatDate(d) {
 
     <!-- Retour -->
     <div class="flex items-center gap-4 mb-6">
-      <RouterLink to="/gestionnaire/documents"
-        class="text-gray-400 hover:text-gray-600 text-sm">
+      <RouterLink to="/gestionnaire/documents" class="text-gray-400 hover:text-gray-600 text-sm">
         ← Documents à vérifier
       </RouterLink>
       <h1 class="text-2xl font-bold text-[#042C53]">Détail du document</h1>
     </div>
 
     <!-- Chargement -->
-    <div v-if="store.loading && !store.currentDocument"
-      class="text-center py-16 text-gray-400">
+    <div v-if="store.loading && !store.currentDocument" class="text-center py-16 text-gray-400">
       ⏳ Chargement...
     </div>
 
@@ -121,8 +126,7 @@ function formatDate(d) {
         </div>
 
         <!-- Résumé -->
-        <div v-if="store.currentDocument.depot_request?.reference?.abstract"
-          class="bg-gray-50 rounded-lg p-4 mb-5">
+        <div v-if="store.currentDocument.depot_request?.reference?.abstract" class="bg-gray-50 rounded-lg p-4 mb-5">
           <p class="text-xs text-gray-400 mb-1">Résumé</p>
           <p class="text-sm text-gray-700">
             {{ store.currentDocument.depot_request?.reference?.abstract }}
@@ -132,13 +136,9 @@ function formatDate(d) {
         <!-- Fichiers joints -->
         <div>
           <p class="text-xs text-gray-400 mb-2">Fichiers joints</p>
-          <div v-if="store.currentDocument.depot_request?.reference?.documents?.length"
-            class="flex flex-wrap gap-2">
-            <span
-              v-for="doc in store.currentDocument.depot_request.reference.documents"
-              :key="doc.id"
-              class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full"
-            >
+          <div v-if="store.currentDocument.depot_request?.reference?.documents?.length" class="flex flex-wrap gap-2">
+            <span v-for="doc in store.currentDocument.depot_request.reference.documents" :key="doc.id"
+              class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full">
               📄 {{ doc.original_name }}
               <span class="text-blue-400">
                 ({{ doc.file_size ? (doc.file_size / 1024 / 1024).toFixed(2) + ' Mo' : '—' }})
@@ -182,23 +182,18 @@ function formatDate(d) {
 
       <!-- ── Boutons d'action ───────────────────────────────────────── -->
       <div class="flex gap-3">
-        <button
-          @click="openDecision('manager_approved')"
-          class="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition"
-        >
+        <button @click="openDecision('manager_approved')"
+          class="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition">
           ✅ Accepter
         </button>
-        <button
-          @click="openDecision('manager_rejected')"
-          class="flex-1 bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition"
-        >
+        <button @click="openDecision('manager_rejected')"
+          class="flex-1 bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition">
           ❌ Rejeter
         </button>
       </div>
 
       <!-- ── Panneau de décision (modal) ────────────────────────────── -->
-      <div v-if="showDecisionPanel"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div v-if="showDecisionPanel" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div class="bg-white rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl">
 
           <h3 class="text-lg font-semibold mb-1"
@@ -219,27 +214,18 @@ function formatDate(d) {
               <span v-if="decisionType === 'manager_rejected'" class="text-red-500">*</span>
               <span v-else class="text-gray-400 font-normal">(optionnel)</span>
             </label>
-            <textarea
-              v-model="comment"
-              rows="3"
-              placeholder="Motif de la décision..."
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C] resize-none"
-            ></textarea>
+            <textarea v-model="comment" rows="3" placeholder="Motif de la décision..."
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C] resize-none"></textarea>
           </div>
 
           <div class="flex gap-3">
-            <button
-              @click="showDecisionPanel = false"
-              class="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-50 transition"
-            >
+            <button @click="showDecisionPanel = false"
+              class="flex-1 border border-gray-300 text-gray-600 py-2 rounded-lg text-sm hover:bg-gray-50 transition">
               Annuler
             </button>
-            <button
-              @click="confirmDecision"
-              :disabled="store.loading"
+            <button @click="confirmDecision" :disabled="store.loading"
               class="flex-1 py-2 rounded-lg text-sm font-semibold text-white transition disabled:opacity-50"
-              :class="decisionType === 'manager_approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'"
-            >
+              :class="decisionType === 'manager_approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'">
               {{ store.loading ? 'Enregistrement...' : 'Confirmer' }}
             </button>
           </div>

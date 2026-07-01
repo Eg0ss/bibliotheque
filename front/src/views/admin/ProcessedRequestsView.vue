@@ -7,34 +7,36 @@
  * Actions : Publier / Rejeter définitivement / Resoumettre au gestionnaire
  */
 
-import { ref, onMounted }      from 'vue'
-import { useToast }            from 'primevue/usetoast'
-import apiClient               from '@/api/axios'
+import { ref, onMounted } from 'vue'
+import { useToast } from 'primevue/usetoast'
+import apiClient from '@/api/axios'
 
-const toast        = useToast()
-const requests     = ref([])
-const pagination   = ref(null)
-const loading      = ref(false)
+const toast = useToast()
+const requests = ref([])
+const pagination = ref(null)
+const loading = ref(false)
 
 // Modal de décision
-const showModal    = ref(false)
-const selectedId   = ref(null)
+const showModal = ref(false)
+const selectedId = ref(null)
 const decisionType = ref('')
-const comment      = ref('')
+const comment = ref('')
 
 async function fetchRequests(page = 1) {
   loading.value = true
   try {
-    const res      = await apiClient.get('/api/admin/depot-requests/traites', { params: { page } })
+    const res = await apiClient.get('/api/admin/depot-requests/traites', { params: { page } })
     requests.value = res.data.data
     pagination.value = {
       current_page: res.data.current_page,
-      last_page   : res.data.last_page,
-      total       : res.data.total,
+      last_page: res.data.last_page,
+      total: res.data.total,
     }
   } catch {
-    toast.add({ severity: 'error', summary: 'Erreur',
-      detail: 'Impossible de charger les demandes.', life: 4000 })
+    toast.add({
+      severity: 'error', summary: 'Erreur',
+      detail: 'Impossible de charger les demandes.', life: 4000
+    })
   } finally {
     loading.value = false
   }
@@ -43,15 +45,20 @@ async function fetchRequests(page = 1) {
 onMounted(() => fetchRequests())
 
 function openModal(id, type) {
-  selectedId.value   = id
+  selectedId.value = id
   decisionType.value = type
-  comment.value      = ''
-  showModal.value    = true
+  comment.value = ''
+  showModal.value = true
 }
 
 async function confirmDecision() {
   if (decisionType.value === 'admin_rejected' && !comment.value.trim()) {
-    alert('Un commentaire est obligatoire en cas de rejet.')
+    toast.add({
+      severity: 'warn',
+      summary: 'Commentaire requis',
+      detail: 'Un commentaire est obligatoire en cas de rejet.',
+      life: 4000,
+    })
     return
   }
   loading.value = true
@@ -60,13 +67,17 @@ async function confirmDecision() {
       `/api/admin/depot-requests/${selectedId.value}/decision`,
       { decision: decisionType.value, comment: comment.value }
     )
-    toast.add({ severity: 'success', summary: 'Décision enregistrée',
-      detail: res.data.message, life: 4000 })
+    toast.add({
+      severity: 'success', summary: 'Décision enregistrée',
+      detail: res.data.message, life: 4000
+    })
     showModal.value = false
     fetchRequests()   // recharger la liste
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Erreur',
-      detail: error.response?.data?.message ?? 'Une erreur est survenue.', life: 5000 })
+    toast.add({
+      severity: 'error', summary: 'Erreur',
+      detail: error.response?.data?.message ?? 'Une erreur est survenue.', life: 5000
+    })
   } finally {
     loading.value = false
   }
@@ -80,15 +91,15 @@ function formatDate(d) {
 }
 
 const statusConfig = {
-  manager_approved: { label: 'Validé (gestionnaire)', bg: 'bg-blue-100',  text: 'text-blue-700'  },
-  rejected        : { label: 'Rejeté',                bg: 'bg-red-100',   text: 'text-red-700'   },
-  published       : { label: 'Publié',                bg: 'bg-green-100', text: 'text-green-700' },
+  manager_approved: { label: 'Validé (gestionnaire)', bg: 'bg-blue-100', text: 'text-blue-700' },
+  rejected: { label: 'Rejeté', bg: 'bg-red-100', text: 'text-red-700' },
+  published: { label: 'Publié', bg: 'bg-green-100', text: 'text-green-700' },
 }
 
 const modalConfig = {
-  published     : { label: 'Publier',    color: 'bg-green-600 hover:bg-green-700'  },
-  admin_rejected: { label: 'Rejeter',    color: 'bg-red-600 hover:bg-red-700'      },
-  resubmitted   : { label: 'Resoumettre', color: 'bg-amber-500 hover:bg-amber-600' },
+  published: { label: 'Publier', color: 'bg-green-600 hover:bg-green-700' },
+  admin_rejected: { label: 'Rejeter', color: 'bg-red-600 hover:bg-red-700' },
+  resubmitted: { label: 'Resoumettre', color: 'bg-amber-500 hover:bg-amber-600' },
 }
 </script>
 
@@ -106,18 +117,13 @@ const modalConfig = {
       ⏳ Chargement...
     </div>
 
-    <div v-else-if="!requests.length"
-      class="bg-white rounded-xl border border-gray-100 p-12 text-center">
+    <div v-else-if="!requests.length" class="bg-white rounded-xl border border-gray-100 p-12 text-center">
       <div class="text-5xl mb-3">📭</div>
       <p class="text-gray-400">Aucune demande traitée pour le moment.</p>
     </div>
 
     <div v-else class="space-y-4">
-      <div
-        v-for="req in requests"
-        :key="req.id"
-        class="bg-white rounded-xl border border-gray-100 shadow-sm p-5"
-      >
+      <div v-for="req in requests" :key="req.id" class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1 min-w-0">
             <h2 class="font-semibold text-[#042C53] truncate">
@@ -134,7 +140,8 @@ const modalConfig = {
             </div>
             <div class="flex gap-4 mt-2 text-xs text-gray-400">
               <span>👤 Soumis par <strong class="text-gray-600">{{ req.user?.name }}</strong></span>
-              <span>👮 Gestionnaire : <strong class="text-gray-600">{{ req.assignment?.assigned_to?.name ?? '—' }}</strong></span>
+              <span>👮 Gestionnaire : <strong class="text-gray-600">{{ req.assignment?.assigned_to?.name ?? '—'
+                  }}</strong></span>
               <span>🗓️ {{ formatDate(req.updated_at) }}</span>
             </div>
             <!-- Commentaire du gestionnaire si présent -->
@@ -146,11 +153,10 @@ const modalConfig = {
 
           <div class="flex flex-col items-end gap-2 flex-shrink-0">
             <!-- Badge statut -->
-            <span class="px-3 py-1 rounded-full text-xs font-medium"
-              :class="[
-                statusConfig[req.status]?.bg ?? 'bg-gray-100',
-                statusConfig[req.status]?.text ?? 'text-gray-600'
-              ]">
+            <span class="px-3 py-1 rounded-full text-xs font-medium" :class="[
+              statusConfig[req.status]?.bg ?? 'bg-gray-100',
+              statusConfig[req.status]?.text ?? 'text-gray-600'
+            ]">
               {{ statusConfig[req.status]?.label ?? req.status }}
             </span>
 
@@ -174,12 +180,10 @@ const modalConfig = {
       </div>
 
       <!-- Pagination -->
-      <div v-if="pagination?.last_page > 1"
-        class="flex items-center justify-between pt-2 text-sm text-gray-500">
+      <div v-if="pagination?.last_page > 1" class="flex items-center justify-between pt-2 text-sm text-gray-500">
         <span>Page {{ pagination.current_page }} / {{ pagination.last_page }}</span>
         <div class="flex gap-2">
-          <button @click="fetchRequests(pagination.current_page - 1)"
-            :disabled="pagination.current_page === 1"
+          <button @click="fetchRequests(pagination.current_page - 1)" :disabled="pagination.current_page === 1"
             class="px-3 py-1.5 rounded-lg border hover:bg-gray-50 disabled:opacity-40 transition">
             ← Précédent
           </button>
@@ -200,7 +204,8 @@ const modalConfig = {
         </h3>
         <p class="text-sm text-gray-500 mb-4">
           <span v-if="decisionType === 'published'">La référence sera publiée dans le catalogue public.</span>
-          <span v-else-if="decisionType === 'resubmitted'">La référence sera renvoyée au gestionnaire pour re-vérification.</span>
+          <span v-else-if="decisionType === 'resubmitted'">La référence sera renvoyée au gestionnaire pour
+            re-vérification.</span>
           <span v-else>La référence sera rejetée définitivement.</span>
         </p>
         <div class="mb-4">
@@ -209,8 +214,7 @@ const modalConfig = {
             <span v-if="decisionType === 'admin_rejected'" class="text-red-500">*</span>
             <span v-else class="text-gray-400 font-normal">(optionnel)</span>
           </label>
-          <textarea v-model="comment" rows="3"
-            placeholder="Motif / instructions..."
+          <textarea v-model="comment" rows="3" placeholder="Motif / instructions..."
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0C447C] resize-none">
           </textarea>
         </div>
