@@ -31,8 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('roles', [UserController::class, 'getRoles']);
 
         Route::get('categories/all', [CategoryController::class, 'all']);
-        Route::apiResource('categories', CategoryController::class, 'all');
-        Route::apiResource('types', TypeController::class, 'index');
+        Route::apiResource('categories', CategoryController::class);
+        Route::apiResource('types', TypeController::class);
 
         // Workflow
         Route::get('depot-requests',                      [AdminDepotRequestController::class, 'index']);

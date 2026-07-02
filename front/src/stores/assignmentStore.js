@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import assignmentApi from '../api/assignmentApi'
 import { useToast } from 'primevue/usetoast'
-import apiClient from '../api/axios'
+import apiClient from '@/api/axios'
 
 export const useAssignmentStore = defineStore('assignment', () => {
   const pendingRequests = ref([]) // demandes en attente
@@ -21,7 +21,7 @@ export const useAssignmentStore = defineStore('assignment', () => {
     type_id: '',
     category_id: '',
   })
-
+  
   const toast = useToast()
 
 
@@ -94,8 +94,8 @@ export const useAssignmentStore = defineStore('assignment', () => {
   async function fetchFilterOptions() {
     try {
       const [typesRes, catsRes] = await Promise.all([
-        apiClient.get('/api/admin/types'),
-        apiClient.get('/api/admin/categories'),
+        apiClient.get('/api/user/types'),
+        apiClient.get('/api/user/categories'),
       ])
       types.value = typesRes.data.data
       categories.value = catsRes.data.data
