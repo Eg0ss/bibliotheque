@@ -2,10 +2,11 @@
 import apiClient from './axios'
 
 const assignmentApi = {
-
-  // Toutes les demandes en attente (status = pending)
-  getPendingRequests(page = 1) {
-    return apiClient.get(`/api/admin/depot-requests?page=${page}`)
+  // Demandes en attente avec recherche et filtres
+  getPendingRequests(page = 1, filters = {}) {
+    return apiClient.get('/api/admin/depot-requests', {
+      params: { page, ...filters },
+    })
   },
 
   // Toutes les assignations existantes

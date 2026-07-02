@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // Sanctum donne à chaque user la capacité d'avoir des tokens
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -67,5 +67,11 @@ class User extends Authenticatable
     public function isRH(): bool
     {
         return $this->hasRole('rh');
+    }
+
+    // Les assignations reçues (en tant que gestionnaire)
+    public function assignments()
+    {
+        return $this->hasMany(\App\Models\DocumentAssignment::class, 'assigned_to');
     }
 }

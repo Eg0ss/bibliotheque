@@ -238,7 +238,7 @@ const cards = [
     <!-- Message si aucune demande encore -->
     <div v-if="store.stats.total === 0 && !store.loading"
       class="bg-white rounded-xl border border-gray-100 shadow-sm p-10 text-center">
-      <div class="text-5xl mb-3">📭</div>
+      <div class="text-5xl mb-3"></div>
       <p class="text-gray-500 font-medium mb-1">Aucune demande pour le moment</p>
       <p class="text-sm text-gray-400 mb-4">Commencez par soumettre votre première référence.</p>
       <RouterLink

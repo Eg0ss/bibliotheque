@@ -8,10 +8,10 @@ const store = useAssignmentStore()
 const route = useRoute()
 
 // ── Modal state ──────────────────────────────────────────────
-const showModal       = ref(false)
+const showModal = ref(false)
 const selectedRequest = ref('')    // depot_request_id pré-sélectionné
-const selectedGest    = ref('')    // gestionnaire choisi dans le select
-const instructions    = ref('')    // instructions optionnelles
+const selectedGest = ref('')    // gestionnaire choisi dans le select
+const instructions = ref('')    // instructions optionnelles
 
 // Si on arrive depuis PendingRequestsView avec ?depot_request_id=X
 // → on ouvre le modal directement avec la demande pré-sélectionnée
@@ -33,10 +33,10 @@ function openModal() {
 }
 
 function closeModal() {
-  showModal.value       = false
+  showModal.value = false
   selectedRequest.value = ''
-  selectedGest.value    = ''
-  instructions.value    = ''
+  selectedGest.value = ''
+  instructions.value = ''
 }
 
 async function handleAssign() {
@@ -44,8 +44,8 @@ async function handleAssign() {
 
   const success = await store.assignRequest({
     depot_request_id: selectedRequest.value,
-    assigned_to     : selectedGest.value,
-    instructions    : instructions.value || null,
+    assigned_to: selectedGest.value,
+    instructions: instructions.value || null,
   })
 
   if (success) closeModal()
@@ -67,11 +67,8 @@ function formatDate(d) {
           Gérez l'assignation des demandes de dépôt aux gestionnaires.
         </p>
       </div>
-      <button
-        @click="openModal"
-        class="bg-[#042C53] text-white text-sm px-4 py-2 rounded-lg
-               hover:bg-[#0C447C] transition flex items-center gap-2"
-      >
+      <button @click="openModal" class="bg-[#042C53] text-white text-sm px-4 py-2 rounded-lg
+               hover:bg-[#0C447C] transition flex items-center gap-2">
         ➕ Nouvelle assignation
       </button>
     </div>
@@ -144,8 +141,7 @@ function formatDate(d) {
 
     <!-- ── MODAL d'assignation ── -->
     <Teleport to="body">
-      <div v-if="showModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
         @click.self="closeModal">
 
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
@@ -153,8 +149,7 @@ function formatDate(d) {
           <!-- Header modal -->
           <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-lg font-bold text-[#042C53]">Assigner une demande</h2>
-            <button @click="closeModal"
-              class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+            <button @click="closeModal" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
           </div>
 
           <!-- Corps modal -->
@@ -165,34 +160,36 @@ function formatDate(d) {
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 Demande de dépôt <span class="text-red-500">*</span>
               </label>
-              <select v-model="selectedRequest"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+              <select v-model="selectedRequest" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
                        focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white">
                 <option value="" disabled>Sélectionner une demande</option>
-                <option
-                  v-for="req in store.pendingRequests.filter(r => r.status === 'pending')"
-                  :key="req.id"
-                  :value="req.id"
-                >
+                <option v-for="req in store.pendingRequests.filter(r => r.status === 'pending')" :key="req.id"
+                  :value="req.id">
                   {{ req.id }} — {{ req.reference?.title ?? '?' }}
                   ({{ req.user?.name }})
                 </option>
               </select>
             </div>
 
-            <!-- Select : gestionnaire -->
+            <!-- Select : gestionnaire avec charge de travail -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 Gestionnaire assigné <span class="text-red-500">*</span>
               </label>
-              <select v-model="selectedGest"
-                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white">
+              <select v-model="selectedGest" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+           focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white">
                 <option value="" disabled>Sélectionner un gestionnaire</option>
                 <option v-for="g in store.gestionnaires" :key="g.id" :value="g.id">
-                  {{ g.name }}
+                 
+                  [{{ g.pending_assignments_count }} en cours] {{ g.name }}
                 </option>
               </select>
+
+              <!-- Légende sous le select -->
+              <p class="text-xs text-gray-400 mt-1">
+                Le chiffre entre crochets indique le nombre de références non traitées.
+                Les gestionnaires les moins chargés apparaissent en premier.
+              </p>
             </div>
 
             <!-- Instructions (optionnelles) -->
@@ -201,26 +198,20 @@ function formatDate(d) {
                 Instructions
                 <span class="text-gray-400 font-normal">(optionnelles)</span>
               </label>
-              <textarea v-model="instructions" rows="3"
-                placeholder="Indications particulières pour le gestionnaire..."
+              <textarea v-model="instructions" rows="3" placeholder="Indications particulières pour le gestionnaire..."
                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-[#0C447C] resize-none"/>
+                       focus:outline-none focus:ring-2 focus:ring-[#0C447C] resize-none" />
             </div>
           </div>
 
           <!-- Footer modal -->
           <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3">
-            <button @click="closeModal"
-              class="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg
+            <button @click="closeModal" class="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg
                      hover:bg-gray-50 transition">
               Annuler
             </button>
-            <button
-              @click="handleAssign"
-              :disabled="!selectedRequest || !selectedGest || store.loadingAssign"
-              class="px-5 py-2 text-sm bg-[#042C53] text-white rounded-lg
-                     hover:bg-[#0C447C] transition disabled:opacity-50"
-            >
+            <button @click="handleAssign" :disabled="!selectedRequest || !selectedGest || store.loadingAssign" class="px-5 py-2 text-sm bg-[#042C53] text-white rounded-lg
+                     hover:bg-[#0C447C] transition disabled:opacity-50">
               {{ store.loadingAssign ? 'Assignation...' : 'Confirmer l\'assignation' }}
             </button>
           </div>

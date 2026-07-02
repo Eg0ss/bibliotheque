@@ -31,8 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('roles', [UserController::class, 'getRoles']);
 
         Route::get('categories/all', [CategoryController::class, 'all']);
-        Route::apiResource('categories', CategoryController::class);
-        Route::apiResource('types', TypeController::class);
+        Route::apiResource('categories', CategoryController::class, 'all');
+        Route::apiResource('types', TypeController::class, 'index');
 
         // Workflow
         Route::get('depot-requests',                      [AdminDepotRequestController::class, 'index']);
@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('assignments',   [AdminDepotRequestController::class, 'assignments']);
         Route::post('assignments',  [AdminDepotRequestController::class, 'assign']);
         Route::get('gestionnaires', [AdminDepotRequestController::class, 'gestionnaires']);
+        Route::get('stats', [AdminDepotRequestController::class, 'stats']);
     });
 
     // ── UTILISATEUR ──────────────────────────────────────────────────────
