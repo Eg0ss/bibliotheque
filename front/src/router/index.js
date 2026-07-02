@@ -146,6 +146,18 @@ const routes = [
         name: 'admin.categories.create',
         component: () => import('../views/admin/categories/CategoryCreateView.vue'),
       },
+
+      // ── Types ──
+      {
+        path: 'types',
+        name: 'admin.types',
+        component: () => import('../views/admin/types/TypesListView.vue'),
+      },
+      {
+        path: 'types/nouveau',
+        name: 'admin.types.create',
+        component: () => import('../views/admin/types/TypeCreateView.vue'),
+      },
       {
         // ← NOUVELLE route demandes traitées
         path: 'demandes-traitees',
