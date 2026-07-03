@@ -213,40 +213,36 @@ function resetFilters() {
     }
   }
 
-  // ─── SUPPRIMER UN UTILISATEUR ─────────────────────────────────────────────
-  async function deleteUser(id) {
-    try {
-      await userApi.remove(id)
+ // Suspendre / réactiver un compte
+async function suspendUser(id) {
+  loading.value = true
+  try {
+    const response = await userApi.suspend(id)
 
-      toast.add({
-        severity : 'success',
-        summary  : 'Compte supprimé',
-        detail   : 'Le compte utilisateur a été supprimé.',
-        life     : 4000,
-      })
-
-      // Après suppression, on retourne à la liste
-      router.push('/admin/utilisateurs')
-
-    } catch (error) {
-      // 403 = tentative de se supprimer soi-même
-      const detail = error.response?.status === 403
-        ? error.response.data.message
-        : 'Impossible de supprimer ce compte.'
-
-      toast.add({
-        severity : 'error',
-        summary  : 'Suppression impossible',
-        detail   : detail,
-        life     : 5000,
-      })
+    // Mettre à jour is_suspended dans currentUser sans recharger
+    if (currentUser.value) {
+      currentUser.value.is_suspended = response.data.is_suspended
     }
+
+    toast.add({
+      severity: response.data.is_suspended ? 'warn' : 'success',
+      summary : response.data.is_suspended ? 'Compte suspendu' : 'Compte réactivé',
+      detail  : response.data.message,
+      life    : 4000,
+    })
+
+  } catch (error) {
+    const msg = error.response?.data?.message ?? 'Une erreur est survenue.'
+    toast.add({ severity: 'error', summary: 'Erreur', detail: msg, life: 5000 })
+  } finally {
+    loading.value = false
   }
+}
 
   // ─── On expose tout ce dont les composants Vue ont besoin ─────────────────
   return {
-    users, currentUser, pagination, roles,filters, loading, errors,
+    users, currentUser, pagination, roles,filters, loading, errors, 
     fetchUsers, fetchUser, fetchRoles, resetFilters,
-    createUser, updateUser, toggleUserStatus, deleteUser,
+    createUser, updateUser, toggleUserStatus, suspendUser,
   }
 })

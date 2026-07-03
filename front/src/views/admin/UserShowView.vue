@@ -10,9 +10,10 @@
  *  3. Proposer les actions : activer/désactiver, supprimer
  */
 
-import { reactive, ref, watch, onMounted } from 'vue'
+import { reactive, ref, watch, onMounted, computed } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
+import { useAuthStore } from '@/stores/authStore'
 
 // useRoute() donne accès aux paramètres de l'URL (/admin/utilisateurs/:id)
 const route = useRoute()
@@ -30,8 +31,13 @@ const form = reactive({
   password_confirmation: '',
 })
 
-// Contrôle la confirmation de suppression
-const showDeleteConfirm = ref(false)
+// Contrôle la confirmation de suspension
+const showSuspendConfirm = ref(false)
+
+// Vérifie si l'admin connecté regarde sa propre fiche
+const isSelf = computed(
+  () => userStore.currentUser?.id === useAuthStore().user?.id
+)
 
 // ─── Au chargement de la page ─────────────────────────────────────────────
 onMounted(async () => {
@@ -62,10 +68,9 @@ function handleToggleStatus() {
   userStore.toggleUserStatus(route.params.id)
 }
 
-// ─── Supprimer ────────────────────────────────────────────────────────────
-function handleDelete() {
-  userStore.deleteUser(route.params.id)
-  showDeleteConfirm.value = false
+function handleSuspend() {
+  userStore.suspendUser(route.params.id)
+  showSuspendConfirm.value = false
 }
 </script>
 
@@ -132,34 +137,80 @@ function handleDelete() {
           </div>
         </div>
 
-        <!-- ── Boutons d'actions ─────────────────────────────────────────── -->
+        <!-- ── Boutons d'actions ── -->
         <div class="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-100">
 
-          <!-- Modifier : affiche/cache le formulaire -->
-          <button @click="showEditForm = !showEditForm"
-            class="px-4 py-2 text-sm font-medium rounded-lg border border-[#042C53] text-[#042C53] hover:bg-[#042C53] hover:text-white transition">
+          <!-- Modifier -->
+          <button @click="showEditForm = !showEditForm" class="px-4 py-2 text-sm font-medium rounded-lg border border-[#042C53]
+           text-[#042C53] hover:bg-[#042C53] hover:text-white transition">
             {{ showEditForm ? 'Annuler la modification' : 'Modifier' }}
           </button>
 
-          <!-- Activer / Désactiver — masqué si c'est son propre compte -->
+          <!-- Activer / Désactiver (is_active) — pas sur son propre compte -->
           <button v-if="!isSelf" @click="handleToggleStatus" :disabled="userStore.loading"
             class="px-4 py-2 text-sm font-medium rounded-lg transition disabled:opacity-50" :class="userStore.currentUser.is_active
               ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
               : 'bg-green-100 text-green-700 hover:bg-green-200'">
-            {{ userStore.currentUser.is_active ? 'Désactiver' : ' Activer' }}
+            {{ userStore.currentUser.is_active ? 'Désactiver' : 'Activer' }}
           </button>
 
-          <!-- Message affiché à la place si c'est son propre compte -->
-          <span v-else class="px-4 py-2 text-sm text-gray-400 italic">
+          <!-- Suspendre / Réactiver (is_suspended) — pas sur son propre compte -->
+          <button v-if="!isSelf" @click="showSuspendConfirm = true" :disabled="userStore.loading"
+            class="px-4 py-2 text-sm font-medium rounded-lg transition disabled:opacity-50" :class="userStore.currentUser.is_suspended
+              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+              : 'bg-red-100 text-red-700 hover:bg-red-200'">
+            {{ userStore.currentUser.is_suspended ? '🔓 Lever la suspension' : '🔒 Suspendre' }}
+          </button>
+
+          <!-- Message si c'est son propre compte -->
+          <span v-if="isSelf" class="px-4 py-2 text-sm text-gray-400 italic">
             Vous ne pouvez pas modifier votre propre statut
           </span>
 
-          <!-- Supprimer -->
-          <button @click="showDeleteConfirm = true"
-            class="px-4 py-2 text-sm font-medium rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition">
-            Supprimer
-          </button>
         </div>
+
+        <!-- Badge suspension visible dans la carte d'info -->
+        <div v-if="userStore.currentUser.is_suspended"
+          class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
+          🔒 <span>Ce compte est <strong>suspendu</strong> — l'utilisateur ne peut plus se connecter.</span>
+        </div>
+        <div v-else-if="!userStore.currentUser.is_active"
+          class="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-700 flex items-center gap-2">
+          ⚠️ <span>Ce compte est <strong>désactivé</strong> — l'utilisateur peut se connecter mais ne peut pas soumettre
+            de demande.</span>
+        </div>
+
+        <!-- ── Modal confirmation suspension ── -->
+        <Teleport to="body">
+          <div v-if="showSuspendConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl">
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                {{ userStore.currentUser.is_suspended ? 'Lever la suspension ?' : 'Suspendre ce compte ?' }}
+              </h3>
+              <p class="text-sm text-gray-600 mb-6">
+                <template v-if="userStore.currentUser.is_suspended">
+                  Le compte de <strong>{{ userStore.currentUser.name }}</strong> sera réactivé.
+                  L'utilisateur pourra se reconnecter.
+                </template>
+                <template v-else>
+                  Le compte de <strong>{{ userStore.currentUser.name }}</strong> sera suspendu.
+                  L'utilisateur ne pourra plus se connecter jusqu'à levée de la suspension.
+                </template>
+              </p>
+              <div class="flex gap-3">
+                <button @click="showSuspendConfirm = false"
+                  class="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                  Annuler
+                </button>
+                <button @click="handleSuspend" class="flex-1 px-4 py-2 text-sm text-white rounded-lg transition" :class="userStore.currentUser.is_suspended
+                  ? 'bg-blue-600 hover:bg-blue-700'
+                  : 'bg-red-600 hover:bg-red-700'">
+                  {{ userStore.currentUser.is_suspended ? 'Confirmer la réactivation' : 'Confirmer la suspension' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Teleport>
       </div>
 
       <!-- ── Formulaire de modification (affiché si showEditForm = true) ─── -->
@@ -235,35 +286,7 @@ function handleDelete() {
 
         </form>
       </div>
-
-      <!-- ── Modal de confirmation de suppression ────────────────────────── -->
-      <!--
-        v-if contrôle la visibilité : quand showDeleteConfirm = true, le modal apparaît
-        Le fond noir semi-transparent est obtenu avec fixed inset-0 bg-black/50
-      -->
-      <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl">
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirmer la suppression</h3>
-          <p class="text-sm text-gray-600 mb-6">
-            Vous êtes sur le point de supprimer le compte de
-            <strong>{{ userStore.currentUser.name }}</strong>.
-            Cette action est irréversible.
-          </p>
-          <div class="flex gap-3">
-            <!-- Annuler : ferme le modal -->
-            <button @click="showDeleteConfirm = false"
-              class="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-              Annuler
-            </button>
-            <!-- Confirmer : lance la suppression -->
-            <button @click="handleDelete"
-              class="flex-1 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-              Oui, supprimer
-            </button>
-          </div>
-        </div>
-      </div>
-
+      
     </div>
   </div>
 </template>

@@ -55,20 +55,27 @@ public function index(Request $request)
 {
     $this->authorize('create', DepotRequest::class);
 
-    // ── 1. Stocker le fichier PDF (optionnel) ──────────────────────────
+    // ── 2. Vérifier que l'utilisateur est actif ──────────────────────────
+    if (!Auth::user()->is_active) {
+        return response()->json([
+            'message' => 'Vous ne pouvez pas soumettre de demande de dépôt car votre compte est désactivé.',
+        ], 403);
+    }
+
+    // ── 2. Stocker le fichier PDF (optionnel) ──────────────────────────
     $filePath = null;
     if ($request->hasFile('file') && $request->file('file')->isValid()) {
         // isValid() vérifie qu'il n'y a pas eu d'erreur pendant l'upload
         $filePath = $request->file('file')->store('documents/private', 'local');
     }
 
-    // ── 2. Stocker l'image de couverture (optionnelle) ─────────────────
+    // ── 3. Stocker l'image de couverture (optionnelle) ─────────────────
     $coverPath = null;
     if ($request->hasFile('cover_image') && $request->file('cover_image')->isValid()) {
         $coverPath = $request->file('cover_image')->store('covers', 'public');
     }
 
-    // ── 3. Créer la référence documentaire ─────────────────────────────
+    // ── 4. Créer la référence documentaire ─────────────────────────────
     $reference = DocumentReference::create([
         'title'            => $request->validated()['title'],
         'author'           => $request->validated()['author'],

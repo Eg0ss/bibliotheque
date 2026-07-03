@@ -18,6 +18,7 @@ class User extends Authenticatable
         'password',
         'role_id',
         'is_active',
+        'is_suspended',
     ];
 
     // Colonnes jamais renvoyées dans les réponses JSON
@@ -32,6 +33,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
             'is_active'         => 'boolean',
+            'is_suspended'      => 'boolean',
         ];
     }
 

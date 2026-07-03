@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { RouterLink, useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
-const route     = useRoute()
+const route = useRoute()
 const openGroup = ref(null)
 
 function toggleGroup(name) {
@@ -17,38 +17,38 @@ const sidebarItems = computed(() => {
 
   if (role === 'admin') {
     return [
-      { type: 'link',  to: '/admin',            label: 'Tableau de bord'  },
-      { type: 'link', to: '/admin/demandes-attente',  label: 'Demandes en attente' },
-      { type: 'link', to: '/admin/demandes-traitees',  label: 'Demandes traitées'   },
+      { type: 'link', to: '/admin', label: 'Tableau de bord' },
+      { type: 'link', to: '/admin/demandes-attente', label: 'Demandes en attente' },
+      { type: 'link', to: '/admin/demandes-traitees', label: 'Demandes traitées' },
       {
-        type    : 'group',
-        name    : 'initialisation',
-        label   : 'Initialisation',
+        type: 'group',
+        name: 'initialisation',
+        label: 'Initialisation',
         children: [
-          { to: '/admin/utilisateurs', label: 'Utilisateurs'},
-          { to: '/admin/categories',   label: 'Catégories' },
-          { to: '/admin/types',        label: 'Types'},
+          { to: '/admin/utilisateurs', label: 'Utilisateurs' },
+          { to: '/admin/categories', label: 'Catégories' },
+          { to: '/admin/types', label: 'Types' },
         ],
       },
-      { type: 'link',  to: '/admin/publication', label: 'Publications'     },
-      { type: 'link',  to: '/admin/assignation', label: 'Assignations'},
-      { type: 'link',  to: '/admin/decision',    label: 'Décisions finales' },
+      { type: 'link', to: '/admin/publication', label: 'Publications' },
+      { type: 'link', to: '/admin/assignation', label: 'Assignations' },
+      { type: 'link', to: '/admin/decision', label: 'Décisions finales' },
     ]
   }
 
   if (role === 'gestionnaire') {
     return [
-      { type: 'link', to: '/gestionnaire',             label: 'Tableau de bord' },
-      { type: 'link', to: '/gestionnaire/documents',   label: 'Documents à vérifier' },
-      { type: 'link', to: '/gestionnaire/validations',  label: 'Mes validations' },
+      { type: 'link', to: '/gestionnaire', label: 'Tableau de bord' },
+      { type: 'link', to: '/gestionnaire/documents', label: 'Documents à vérifier' },
+      { type: 'link', to: '/gestionnaire/validations', label: 'Mes validations' },
     ]
   }
 
   if (role === 'rh') {
     return [
-      { type: 'link', to: '/rh',               label: 'Tableau de bord' },
-      { type: 'link', to: '/rh/utilisateurs',  label: 'Utilisateurs' },
-      { type: 'link', to: '/rh/historique',    label: 'Historique' },
+      { type: 'link', to: '/rh', label: 'Tableau de bord' },
+      { type: 'link', to: '/rh/utilisateurs', label: 'Utilisateurs' },
+      { type: 'link', to: '/rh/historique', label: 'Historique' },
     ]
   }
 
@@ -82,7 +82,7 @@ async function handleLogout() {
   <div class="min-h-screen flex bg-[#f8f9fb]">
 
     <!-- ── Sidebar ── -->
-    <aside class="w-64 bg-[#042C53] text-white flex flex-col min-h-screen">
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-[#042C53] text-white flex flex-col overflow-y-auto z-40">
 
       <!-- Logo -->
       <div class="p-5 border-b border-white/20">
@@ -102,21 +102,21 @@ async function handleLogout() {
         </span>
       </div>
 
- <!-- ── Bouton retour à l'accueil publique ─────────────────────────────
+      <!-- ── Bouton retour à l'accueil publique ─────────────────────────────
        Bien visible, séparé du reste, pour basculer facilement
        vers le catalogue public sans se déconnecter -->
-        <div class="px-4 pt-4">
-          <RouterLink to="/" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg
+      <div class="px-4 pt-4">
+        <RouterLink to="/" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg
              bg-white/10 hover:bg-white/20 text-white text-sm font-medium
              border border-white/20 transition-all">
-            <!-- <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+          <!-- <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg> -->
-            Retour à l'accueil
-          </RouterLink>
-        </div>
+          Retour à l'accueil
+        </RouterLink>
+      </div>
 
 
       <!-- Navigation -->
@@ -184,7 +184,7 @@ async function handleLogout() {
         <span class="text-sm text-gray-400">{{ authStore.user?.email }}</span>
       </header>
 
-      <main class="flex-1 overflow-auto p-6">
+      <main class="ml-69 flex-1 min-h-screen overflow-y-auto">
         <RouterView />
       </main>
     </div>

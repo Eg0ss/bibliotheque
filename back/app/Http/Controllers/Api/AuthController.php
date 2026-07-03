@@ -73,7 +73,7 @@ class AuthController extends Controller
         }
 
         // 3. Vérifier que le compte est actif (pas désactivé par la RH)
-        if (!Auth::user()->is_active) {
+        if (Auth::user()->is_suspended) {
             Auth::logout(); // On déconnecte immédiatement
             throw ValidationException::withMessages([
                 'email' => ['Votre compte est désactivé. Contactez l\'administration.'],

@@ -1,6 +1,7 @@
 // src/api/userApi.js
 // Toutes les fonctions qui appellent les routes admin/users de Laravel
 
+import { Suspense } from 'vue'
 import apiClient from './axios'
 
 const userApi = {
@@ -51,12 +52,12 @@ getAll(page = 1, filters = {}) {
     return apiClient.patch(`/api/admin/users/${id}/toggle-status`)
   },
 
-  /**
-   * Supprimer un compte (on l'utilisera à l'étape suivante)
-   */
-  remove(id) {
-    return apiClient.delete(`/api/admin/users/${id}`)
-  },
+//suspend(id) {
+//  return apiClient.patch(`/api/admin/users/${id}/suspend`)
+suspend(id) {
+  // Basculer la suspension (suspendu ↔ actif)
+  return apiClient.patch(`/api/admin/users/${id}/suspend`)
+},
 
   /**
    * Récupérer la liste de tous les rôles (pour le select du formulaire)

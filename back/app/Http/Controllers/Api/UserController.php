@@ -156,31 +156,33 @@ class UserController extends Controller
     }
 
     /**
-     * SUPPRIMER un utilisateur
-     * DELETE /api/admin/users/{id}
-     *
-     * authorize('delete', $user)
-     * → UserPolicy::delete($userConnecte, $user)
-     * → Gate::before laisse passer l'admin
-     */
-    public function destroy(string $id)
-    {
-        $user = User::findOrFail($id);
+ * SUSPENDRE un utilisateur
+ * PATCH /api/admin/users/{id}/suspend
+ *
+ * - Bloque totalement la connexion (is_suspended = true)
+ * - L'admin ne peut pas se suspendre lui-même
+ * - Peut être réactivé ultérieurement (is_suspended = false)
+ */
+public function suspend(string $id)
+{
+    $user = User::findOrFail($id);
 
-        $this->authorize('delete', $user);
-
-        if ($user->id === auth()->id()) {
-            return response()->json([
-                'message' => 'Vous ne pouvez pas supprimer votre propre compte.',
-            ], 403);
-        }
-
-        $user->delete();
-
+    // L'admin ne peut pas se suspendre lui-même
+    if ($user->id === auth()->id()) {
         return response()->json([
-            'message' => 'Compte supprimé avec succès.',
-        ]);
+            'message' => 'Vous ne pouvez pas suspendre votre propre compte.',
+        ], 403);
     }
+
+    // Basculer l'état de suspension
+    $user->update(['is_suspended' => !$user->is_suspended]);
+    $label = $user->is_suspended ? 'suspendu' : 'réactivé';
+
+    return response()->json([
+        'message'      => "Compte {$label} avec succès.",
+        'is_suspended' => $user->is_suspended,
+    ]);
+}
 
     /**
      * LISTE DES RÔLES

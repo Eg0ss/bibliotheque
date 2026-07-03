@@ -29,6 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::apiResource('users', UserController::class);
         Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+        Route::patch('users/{id}/suspend',       [UserController::class, 'suspend']);
         Route::get('roles', [UserController::class, 'getRoles']);
 
         Route::get('categories/all', [CategoryController::class, 'all']);

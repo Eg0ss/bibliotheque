@@ -74,7 +74,7 @@ async function handleLogout() {
   <div class="min-h-screen flex bg-[#f8f9fb]">
 
     <!-- ── Sidebar utilisateur ── -->
-    <aside class="w-64 bg-[#1e3a5f] text-white flex flex-col min-h-screen">
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-[#1e3a5f] text-white flex flex-col overflow-y-auto z-40">
 
       <!-- Logo -->
       <div class="p-5 border-b border-white/20">
@@ -139,8 +139,8 @@ async function handleLogout() {
                    text-white/80 hover:bg-white/10 hover:text-white transition-all" :class="{
                     'bg-white/20 text-white font-semibold':
                       item.to === '/mon-espace'
-                        ? route.path === '/mon-espace'          
-                        : route.path.startsWith(item.to)       
+                        ? route.path === '/mon-espace'
+                        : route.path.startsWith(item.to)
                   }">
             <span class="text-base">{{ item.icon }}</span>
             {{ item.label }}
@@ -198,7 +198,7 @@ async function handleLogout() {
       </header>
 
       <!-- Page active -->
-      <main class="flex-1 overflow-auto p-6">
+      <main class="ml-70 flex-1 min-h-screen overflow-y-auto">
         <RouterView />
       </main>
     </div>
