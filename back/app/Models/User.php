@@ -49,7 +49,10 @@ class User extends Authenticatable
      */
     public function hasRole(string $slug): bool
     {
-        // On charge la relation role si pas déjà chargée (lazy loading)
+        // Force le chargement de la relation si pas encore chargée
+        if (!$this->relationLoaded('role')) {
+            $this->load('role');
+        }
         return $this->role?->slug === $slug;
     }
 

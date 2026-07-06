@@ -25,6 +25,9 @@ export const useAuthStore = defineStore('auth', () => {
   // Le nom du rôle de l'utilisateur connecté (ex: 'admin', 'user', 'gestionnaire')
   const userRole = computed(() => user.value?.role?.slug ?? null)
 
+  // true si le compte est actif
+  const isActive = computed(() => user.value?.is_active === true)
+
   // ─── Actions ─────────────────────────────────────────────
 
   /**
@@ -130,6 +133,7 @@ export const useAuthStore = defineStore('auth', () => {
     errors,
     isAuthenticated,
     userRole,
+    isActive,
     register,
     login,
     logout,

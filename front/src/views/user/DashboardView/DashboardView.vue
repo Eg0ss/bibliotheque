@@ -8,13 +8,14 @@
  * total soumises, en attente, en cours de validation, publiées, rejetées
  */
 
-import { onMounted }             from 'vue'
-import { RouterLink }            from 'vue-router'
-import { useDepotRequestStore }  from '@/stores/depotRequestStore'
-import { useAuthStore }          from '@/stores/authStore'
+import { onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useDepotRequestStore } from '@/stores/depotRequestStore'
+import { useAuthStore } from '@/stores/authStore'
 
-const store     = useDepotRequestStore()
+const store = useDepotRequestStore()
 const authStore = useAuthStore()
+const auth = authStore
 
 onMounted(() => {
   // On charge les stats dès l'arrivée sur le tableau de bord
@@ -24,39 +25,39 @@ onMounted(() => {
 // Configuration des cartes — chaque carte correspond à un statut
 const cards = [
   {
-    key    : 'total',
-    label  : 'Total soumises',
-    bg     : 'bg-[#1e3a5f]',
-    text   : 'text-white',
-    sub    : 'text-white/70',
-    link   : '/mon-espace/depots',
+    key: 'total',
+    label: 'Total soumises',
+    bg: 'bg-[#1e3a5f]',
+    text: 'text-white',
+    sub: 'text-white/70',
+    link: '/mon-espace/depots',
     linkLabel: 'Voir tout',
   },
   {
-    key    : 'in_progress',
-    label  : 'En cours de traitement',
-    bg     : 'bg-amber-50',
-    text   : 'text-amber-800',
-    sub    : 'text-amber-500',
-    link   : '/mon-espace/depots?status=in_progress',
+    key: 'in_progress',
+    label: 'En cours de traitement',
+    bg: 'bg-amber-50',
+    text: 'text-amber-800',
+    sub: 'text-amber-500',
+    link: '/mon-espace/depots?status=in_progress',
     linkLabel: 'Voir',
   },
   {
-    key    : 'published',
-    label  : 'Publiées',
-    bg     : 'bg-green-50',
-    text   : 'text-green-800',
-    sub    : 'text-green-500',
-    link   : '/mon-espace/depots?status=published',
+    key: 'published',
+    label: 'Publiées',
+    bg: 'bg-green-50',
+    text: 'text-green-800',
+    sub: 'text-green-500',
+    link: '/mon-espace/depots?status=published',
     linkLabel: 'Voir',
   },
   {
-    key    : 'rejected',
-    label  : 'Rejetées',
-    bg     : 'bg-red-50',
-    text   : 'text-red-800',
-    sub    : 'text-red-500',
-    link   : '/mon-espace/depots?status=rejected',
+    key: 'rejected',
+    label: 'Rejetées',
+    bg: 'bg-red-50',
+    text: 'text-red-800',
+    sub: 'text-red-500',
+    link: '/mon-espace/depots?status=rejected',
     linkLabel: 'Voir',
   },
 ]
@@ -69,7 +70,7 @@ const cards = [
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-bold text-[#1e3a5f]">
-          Bonjour, {{ authStore.user?.name?.split(' ')[0] }} 
+          Bonjour, {{ authStore.user?.name?.split(' ')[0] }}
         </h1>
         <p class="text-sm text-gray-500 mt-1">
           Voici le récapitulatif de vos demandes de dépôt.
@@ -77,31 +78,27 @@ const cards = [
       </div>
 
       <!-- Bouton accès rapide -->
-      <RouterLink
-        to="/mon-espace/depots/nouveau"
-        class="flex items-center gap-2 bg-[#1e3a5f] text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-[#2d5a8e] transition"
-      >
+      <RouterLink v-if="auth.isActive" to="/mon-espace/depots/nouveau"
+        class="bg-[#1e3a5f] text-white text-sm px-4 py-2 rounded-lg hover:bg-[#0C447C] transition flex items-center gap-2">
         <span>+</span> Nouvelle demande
       </RouterLink>
+
+      <span v-else title="Compte inactif, veuillez contacter l'administrateur"
+        class="cursor-not-allowed bg-gray-300 text-gray-500 text-sm px-4 py-2 rounded-lg flex items-center gap-2 select-none">
+        <span>+</span> Nouvelle demande
+      </span>
     </div>
 
     <!-- ── Cartes statistiques ───────────────────────────────────────── -->
     <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      <div
-        v-for="card in cards"
-        :key="card.key"
-        class="rounded-xl p-5 shadow-sm border border-white/10 flex flex-col gap-3"
-        :class="card.bg"
-      >
+      <div v-for="card in cards" :key="card.key"
+        class="rounded-xl p-5 shadow-sm border border-white/10 flex flex-col gap-3" :class="card.bg">
         <!-- Icône + compteur -->
         <div class="flex items-start justify-between">
           <span class="text-3xl">{{ card.icon }}</span>
 
           <!-- Compteur animé — affiche le chiffre depuis store.stats -->
-          <span
-            class="text-4xl font-bold leading-none"
-            :class="card.text"
-          >
+          <span class="text-4xl font-bold leading-none" :class="card.text">
             <!-- Si les stats chargent encore, on affiche — -->
             {{ store.stats[card.key] ?? '—' }}
           </span>
@@ -110,11 +107,7 @@ const cards = [
         <!-- Label + lien -->
         <div>
           <p class="text-sm font-semibold" :class="card.text">{{ card.label }}</p>
-          <RouterLink
-            :to="card.link"
-            class="text-xs mt-0.5 hover:underline"
-            :class="card.sub"
-          >
+          <RouterLink :to="card.link" class="text-xs mt-0.5 hover:underline" :class="card.sub">
             {{ card.linkLabel }} →
           </RouterLink>
         </div>
@@ -193,44 +186,33 @@ const cards = [
 
       <!-- Barre segmentée -->
       <div class="flex h-3 rounded-full overflow-hidden gap-px">
-        <div
-          v-if="store.stats.pending > 0"
-          class="bg-gray-400 transition-all"
+        <div v-if="store.stats.pending > 0" class="bg-gray-400 transition-all"
           :style="{ width: (store.stats.pending / store.stats.total * 100) + '%' }"
-          :title="`En attente : ${store.stats.pending}`"
-        ></div>
-        <div
-          v-if="store.stats.assigned > 0"
-          class="bg-blue-400 transition-all"
+          :title="`En attente : ${store.stats.pending}`"></div>
+        <div v-if="store.stats.assigned > 0" class="bg-blue-400 transition-all"
           :style="{ width: (store.stats.assigned / store.stats.total * 100) + '%' }"
-          :title="`Assignée : ${store.stats.assigned}`"
-        ></div>
-        <div
-          v-if="store.stats.manager_approved > 0"
-          class="bg-indigo-400 transition-all"
+          :title="`Assignée : ${store.stats.assigned}`"></div>
+        <div v-if="store.stats.manager_approved > 0" class="bg-indigo-400 transition-all"
           :style="{ width: (store.stats.manager_approved / store.stats.total * 100) + '%' }"
-          :title="`Validée gestionnaire : ${store.stats.manager_approved}`"
-        ></div>
-        <div
-          v-if="store.stats.published > 0"
-          class="bg-green-400 transition-all"
+          :title="`Validée gestionnaire : ${store.stats.manager_approved}`"></div>
+        <div v-if="store.stats.published > 0" class="bg-green-400 transition-all"
           :style="{ width: (store.stats.published / store.stats.total * 100) + '%' }"
-          :title="`Publiée : ${store.stats.published}`"
-        ></div>
-        <div
-          v-if="store.stats.rejected > 0"
-          class="bg-red-400 transition-all"
+          :title="`Publiée : ${store.stats.published}`"></div>
+        <div v-if="store.stats.rejected > 0" class="bg-red-400 transition-all"
           :style="{ width: (store.stats.rejected / store.stats.total * 100) + '%' }"
-          :title="`Rejetée : ${store.stats.rejected}`"
-        ></div>
+          :title="`Rejetée : ${store.stats.rejected}`"></div>
       </div>
 
       <!-- Légende -->
       <div class="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> En attente</span>
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span> Assignée</span>
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span> Validée</span>
-        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-400"></span> Publiée</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> En
+          attente</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+          Assignée</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          Validée</span>
+        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+          Publiée</span>
         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400"></span> Rejetée</span>
       </div>
     </div>
@@ -241,12 +223,15 @@ const cards = [
       <div class="text-5xl mb-3"></div>
       <p class="text-gray-500 font-medium mb-1">Aucune demande pour le moment</p>
       <p class="text-sm text-gray-400 mb-4">Commencez par soumettre votre première référence.</p>
-      <RouterLink
-        to="/mon-espace/depots/nouveau"
-        class="inline-flex items-center gap-2 bg-[#1e3a5f] text-white text-sm font-medium px-4 py-2.5 rounded-lg hover:bg-[#2d5a8e] transition"
-      >
+      <RouterLink v-if="auth.isActive" to="/mon-espace/depots/nouveau"
+        class="inline-block bg-[#1e3a5f] text-white text-sm px-5 py-2 rounded-lg hover:bg-[#0C447C] transition">
         + Soumettre une demande
       </RouterLink>
+
+      <span v-else title="Compte inactif, veuillez contacter l'administrateur"
+        class="inline-block cursor-not-allowed bg-gray-300 text-gray-500 text-sm px-5 py-2 rounded-lg select-none">
+        + Soumettre une demande
+      </span>
     </div>
 
   </div>
