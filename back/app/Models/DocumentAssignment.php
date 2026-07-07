@@ -9,9 +9,22 @@ class DocumentAssignment extends Model
     protected $fillable = [
         'depot_request_id',
         'assigned_by',
+        'assigned_at',
+        'due_date',
         'assigned_to',
         'instructions',
     ];
+
+   
+protected $casts = [
+
+    // Date + heure
+    'assigned_at' => 'datetime',
+
+    // Date uniquement
+    'due_date' => 'date',
+
+];
 
     // La demande concernée
     public function depotRequest()

@@ -108,13 +108,14 @@ export const useAuthStore = defineStore('auth', () => {
    */
 
   async function fetchUser() {
-    try {
-      const response = await authApi.me()
-      user.value = response.data.user
-    } catch (error) {
-      user.value = null
-    }
+  try {
+    await authApi.getCsrfCookie()   
+    const response = await authApi.me()
+    user.value = response.data.user
+  } catch (error) {
+    user.value = null
   }
+}
 
   /**
    * Redirection intelligente après connexion selon le rôle

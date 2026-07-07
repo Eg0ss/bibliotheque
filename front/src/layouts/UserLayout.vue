@@ -35,12 +35,12 @@ const sidebarItems = [
   //     { to: '/statistiques', label: 'Statistiques' },
   //   ],
   // },
-  {
-    type: 'link',
-    to: '/mon-espace/depots/nouveau',
-    label: 'Soumettre une demande',
+  // {
+  //   type: 'link',
+  //   to: '/mon-espace/depots/nouveau',
+  //   label: 'Soumettre une demande',
 
-  },
+  // },
   {
     type: 'link',
     to: '/mon-espace/profil',
@@ -174,6 +174,37 @@ async function handleLogout() {
           </div>
 
         </template>
+
+        <!-- Navigation -->
+      <nav class="flex-1 p-4 space-y-1">
+        <template v-for="item in sidebarItems" :key="item.to ?? item.name">
+          <!-- ... liens existants ... -->
+        </template>
+
+        <!-- ── Soumettre une demande ── -->
+        <RouterLink
+          v-if="authStore.isActive"
+          to="/mon-espace/depots/nouveau"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
+                 text-white/80 hover:bg-white/10 hover:text-white transition-all"
+          :class="{
+            'bg-white/20 text-white font-semibold':
+              route.path.startsWith('/mon-espace/depots/nouveau')
+          }"
+        >
+          Soumettre une demande
+        </RouterLink>
+
+        <div
+          v-else
+          title="Compte inactif, veuillez contacter l'administrateur"
+          class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm
+                 text-white/30 bg-white/5 cursor-not-allowed select-none"
+        >
+          Soumettre une demande
+        </div>
+
+      </nav>
       </nav>
 
       <!-- Déconnexion -->

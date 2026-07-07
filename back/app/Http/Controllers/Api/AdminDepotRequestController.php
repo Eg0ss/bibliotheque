@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Assignment\StoreAssignmentRequest;
 use App\Models\DepotRequest;
 use App\Models\DocumentAssignment;
 use App\Models\User;
@@ -93,13 +94,9 @@ public function index(Request $request)
      * ASSIGNER une demande à un gestionnaire
      * Route : POST /api/admin/assignments
      */
-    public function assign(Request $request)
+    public function assign(StoreAssignmentRequest $request)
     {
-        $validated = $request->validate([
-            'depot_request_id' => 'required|exists:depot_requests,id',
-            'assigned_to'      => 'required|exists:users,id',
-            'instructions'     => 'nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         // Vérifier que la demande est bien en statut 'pending'
         $depotRequest = DepotRequest::findOrFail($validated['depot_request_id']);
@@ -114,6 +111,8 @@ public function index(Request $request)
         $assignment = DocumentAssignment::create([
             'depot_request_id' => $validated['depot_request_id'],
             'assigned_by'      => Auth::id(),
+            'assigned_at' => now(),
+            'due_date' => $validated['due_date'],
             'assigned_to'      => $validated['assigned_to'],
             'instructions'     => $validated['instructions'] ?? null,
         ]);

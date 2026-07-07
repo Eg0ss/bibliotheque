@@ -12,6 +12,7 @@ const showModal = ref(false)
 const selectedRequest = ref('')    // depot_request_id pré-sélectionné
 const selectedGest = ref('')    // gestionnaire choisi dans le select
 const instructions = ref('')    // instructions optionnelles
+const dueDate = ref('')    // date limite choisie par l'administrateur
 
 // Si on arrive depuis PendingRequestsView avec ?depot_request_id=X
 // → on ouvre le modal directement avec la demande pré-sélectionnée
@@ -36,15 +37,17 @@ function closeModal() {
   showModal.value = false
   selectedRequest.value = ''
   selectedGest.value = ''
+  dueDate.value = ''
   instructions.value = ''
 }
 
 async function handleAssign() {
-  if (!selectedRequest.value || !selectedGest.value) return
+  if (!selectedRequest.value || !selectedGest.value || !dueDate.value) return
 
   const success = await store.assignRequest({
     depot_request_id: selectedRequest.value,
     assigned_to: selectedGest.value,
+    due_date: dueDate.value,
     instructions: instructions.value || null,
   })
 
@@ -108,7 +111,7 @@ function formatDate(d) {
             <td class="px-5 py-4">
               <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-700
                            text-xs font-medium px-2 py-1 rounded-full">
-                👤 {{ a.assigned_to?.name ?? '—' }}
+                {{ a.assigned_to?.name ?? '—' }}
               </span>
             </td>
             <td class="px-5 py-4 text-gray-500 text-xs">{{ a.assigned_by?.name ?? '—' }}</td>
@@ -180,7 +183,7 @@ function formatDate(d) {
            focus:outline-none focus:ring-2 focus:ring-[#0C447C] bg-white">
                 <option value="" disabled>Sélectionner un gestionnaire</option>
                 <option v-for="g in store.gestionnaires" :key="g.id" :value="g.id">
-                 
+
                   [{{ g.pending_assignments_count }} en cours] {{ g.name }}
                 </option>
               </select>
@@ -190,6 +193,16 @@ function formatDate(d) {
                 Le chiffre entre crochets indique le nombre de références non traitées.
                 Les gestionnaires les moins chargés apparaissent en premier.
               </p>
+            </div>
+
+            <!-- Date limite -->
+            <div>
+              <label class="block text-sm font-medium mb-1">
+                Date limite de traitement
+              </label>
+
+              <input v-model="dueDate" type="date"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500" />
             </div>
 
             <!-- Instructions (optionnelles) -->
