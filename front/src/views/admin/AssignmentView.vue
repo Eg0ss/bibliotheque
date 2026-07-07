@@ -57,6 +57,18 @@ async function handleAssign() {
 function formatDate(d) {
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
 }
+
+function formatDateTime(date) {
+  if (!date) return '—'
+
+  return new Date(date).toLocaleString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 </script>
 
 <template>
@@ -97,6 +109,17 @@ function formatDate(d) {
             <th class="text-left px-5 py-3 text-gray-600 font-medium">Assignée par</th>
             <th class="text-left px-5 py-3 text-gray-600 font-medium">Instructions</th>
             <th class="text-left px-5 py-3 text-gray-600 font-medium">Date</th>
+            <th class="text-left px-5 py-3 text-gray-600 font-medium">
+              Début traitement
+            </th>
+
+            <th class="text-left px-5 py-3 text-gray-600 font-medium">
+              Fin traitement
+            </th>
+
+            <th class="text-left px-5 py-3 text-gray-600 font-medium">
+              Durée totale
+            </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -119,6 +142,20 @@ function formatDate(d) {
               {{ a.instructions ?? '—' }}
             </td>
             <td class="px-5 py-4 text-gray-400 text-xs">{{ formatDate(a.created_at) }}</td>
+            <td class="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
+              {{ formatDateTime(a.processing_started_at) }}
+            </td>
+
+            <td class="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
+              {{ formatDateTime(a.processed_at) }}
+            </td>
+
+            <td class="px-5 py-4">
+              <span
+                class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                {{ a.processing_duration?.label ?? '—' }}
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
