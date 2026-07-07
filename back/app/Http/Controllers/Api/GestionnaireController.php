@@ -20,12 +20,12 @@ class GestionnaireController extends Controller
     public function documents()
     {
         $assignments = DocumentAssignment::with([
-                'depotRequest.reference.category',
-                'depotRequest.reference.type',
-                'depotRequest.reference.documents',
-                'depotRequest.user:id,name,email',
-                'assignedBy:id,name',
-            ])
+            'depotRequest.reference.category',
+            'depotRequest.reference.type',
+            'depotRequest.reference.documents',
+            'depotRequest.user:id,name,email',
+            'assignedBy:id,name',
+        ])
             ->where('assigned_to', Auth::id())
             // On ne montre que les demandes encore en statut 'assigned'
             ->whereHas('depotRequest', fn($q) => $q->where('status', 'assigned'))
@@ -42,17 +42,32 @@ class GestionnaireController extends Controller
     public function show(string $id)
     {
         $assignment = DocumentAssignment::with([
-                'depotRequest.reference.category',
-                'depotRequest.reference.type',
-                'depotRequest.reference.documents',
-                'depotRequest.user:id,name,email',
-                'depotRequest.validationSteps.performer:id,name',
-                'assignedBy:id,name',
-            ])
+            'depotRequest.reference.category',
+            'depotRequest.reference.type',
+            'depotRequest.reference.documents',
+            'depotRequest.user:id,name,email',
+            'depotRequest.validationSteps.performer:id,name',
+            'assignedBy:id,name',
+        ])
             ->where('assigned_to', Auth::id())
             ->findOrFail($id);
 
-        return response()->json(['data' => $assignment]);
+        /*
+| Démarrage du chronomètre
+*/
+        if (is_null($assignment->processing_started_at)) {
+
+            $assignment->update([
+                'processing_started_at' => now(),
+            ]);
+
+            // Recharge le modèle afin de retourner la nouvelle valeur
+            $assignment->refresh();
+        }
+
+        return response()->json([
+            'data' => $assignment
+        ]);
     }
 
     /**
@@ -80,6 +95,14 @@ class GestionnaireController extends Controller
             return response()->json([
                 'message' => 'Cette demande a déjà été traitée.',
             ], 422);
+        }
+
+        /* Fin du chronomètre*/
+
+        if (is_null($assignment->processed_at)) {
+            $assignment->update([
+                'processed_at' => now(),
+            ]);
         }
 
         // Enregistrer la décision dans validation_steps
@@ -112,10 +135,10 @@ class GestionnaireController extends Controller
     public function myValidations()
     {
         $steps = ValidationStep::with([
-                'depotRequest.reference.category',
-                'depotRequest.reference.type',
-                'depotRequest.user:id,name,email',
-            ])
+            'depotRequest.reference.category',
+            'depotRequest.reference.type',
+            'depotRequest.user:id,name,email',
+        ])
             ->where('performed_by', Auth::id())
             ->where('actor_role', 'gestionnaire')
             ->orderBy('created_at', 'desc')
