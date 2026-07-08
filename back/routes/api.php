@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\DepotRequestController;
 use App\Http\Controllers\Api\AdminDepotRequestController;
 use App\Http\Controllers\Api\GestionnaireController;
 use App\Http\Controllers\Api\ReferenceController;
+use App\Http\Controllers\Api\ReferenceInteractionController;
 
 // ── Routes publiques ─────────────────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register']);
@@ -21,8 +22,13 @@ Route::get('/references/{id}', [ReferenceController::class, 'show']);  // Détai
 // ── Routes protégées ─────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
+    // ── connexion ────────────────────────────────────────────────────────
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me',      [AuthController::class, 'me']);
+
+    // ── Interaction téléchargement / like────────────────────────────────────────────────────────
+    Route::get('/references/{id}/telecharger', [ReferenceInteractionController::class, 'download']);
+    Route::post('/references/{id}/like',        [ReferenceInteractionController::class, 'toggleLike']);
 
     // ── ADMIN ────────────────────────────────────────────────────────────
     Route::prefix('admin')->group(function () {

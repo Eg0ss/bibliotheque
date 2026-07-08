@@ -21,3 +21,19 @@ export function fetchPublishedReferences() {
 export function fetchReferenceById(id) {
   return apiClient.get(`/api/references/${id}`)
 }
+
+/**
+ * Déclenche le téléchargement du PDF d'une référence.
+ */
+export function downloadReferenceFile(id) {
+  return apiClient.get(`/api/references/${id}/telecharger`, {
+    responseType: 'blob',
+  })
+}
+
+/**
+ * Like ou unlike une référence (bascule automatique côté backend).
+ */
+export function toggleLikeReference(id) {
+  return apiClient.post(`/api/references/${id}/like`)
+}

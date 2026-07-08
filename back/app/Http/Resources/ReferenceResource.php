@@ -33,7 +33,16 @@ class ReferenceResource extends JsonResource
                                     // Sinon, une image par défaut (placeholder)
                                     : null,
             'status'           => $this->status,           // published, pending, etc.
-            'downloads'        => 0, // À implémenter plus tard avec un vrai compteur
+            'downloads'        => $this->downloads_count, // À implémenter plus tard avec un vrai compteur
+            'likes'            => $this->likes_count,
+            'views'            => $this->views_count,
+
+            // true/false : la référence est-elle déjà likée par l'utilisateur
+            // actuellement connecté ? (false si personne n'est connecté)
+            'is_liked'         => $this->isLikedBy($request->user()?->id),
+
+            // true si un fichier PDF est disponible pour le téléchargement
+            'has_file'         => $this->documents()->exists(),
         ];
     }
 }

@@ -52,4 +52,34 @@ class DocumentReference extends Model
     {
         return $this->hasOne(DepotRequest::class, 'reference_id');
     }
+    // Tous les "likes" reçus par cette référence
+    public function likes()
+    {
+        return $this->hasMany(ReferenceLike::class, 'reference_id');
+    }
+
+    // L'historique des téléchargements de cette référence
+    public function downloadLogs()
+    {
+        return $this->hasMany(DownloadLog::class, 'reference_id');
+    }
+
+    // L'historique des consultations (vues) de cette référence
+    public function consultationLogs()
+    {
+        return $this->hasMany(ConsultationLog::class, 'reference_id');
+    }
+
+    /**
+     * Vérifie si un utilisateur donné a déjà liké cette référence.
+     * Utile pour afficher le bouton "like" plein ou vide côté front.
+     */
+    public function isLikedBy(?int $userId): bool
+    {
+        if (!$userId) {
+            return false;
+        }
+
+        return $this->likes()->where('user_id', $userId)->exists();
+    }
 }

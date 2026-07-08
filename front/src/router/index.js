@@ -19,6 +19,12 @@ const routes = [
     meta: { layout: 'guest' },
   },
   {
+     path: '/catalogue/:id',
+    name: 'catalogue.detail',
+    component: () => import('../views/public/ReferenceDetailView.vue'),
+    meta: { layout: 'guest' },
+  },
+  {
     path: '/recherche',
     name: 'recherche',
     component: () => import('../views/public/SearchView.vue'),

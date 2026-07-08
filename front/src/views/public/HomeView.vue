@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ReferenceCard from '@/components/catalog/ReferenceCard.vue'
@@ -66,8 +66,44 @@ function handleSearch() {
     router.push({ name: 'recherche', query: { q: searchQuery.value } })
   }
 }
-</script>
+</script> -->
+<script setup>
+import { onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import ReferenceCard from '@/components/catalog/ReferenceCard.vue'
+import { useReferenceStore } from '@/stores/referenceStore'
+import { ref } from 'vue'
 
+const router = useRouter()
+const searchQuery = ref('')
+const referenceStore = useReferenceStore()
+
+// On charge les vraies références publiées au montage de la page.
+// referenceStore.loadReferences() appelle GET /api/references,
+// qui trie déjà par date décroissante côté backend (->latest()).
+onMounted(() => {
+  referenceStore.loadReferences()
+})
+
+// On n'affiche que les 4 plus récentes sur la page d'accueil
+const latestReferences = computed(() => referenceStore.references.slice(0, 4))
+
+const cats = ["Sciences", "Lettres", "Droit", "Économie", "Médecine", "Ingénierie"]
+
+const stats = computed(() => [
+  { label: "Références disponibles", value: String(referenceStore.references.length) },
+  {
+    label: "Téléchargements",
+    value: String(referenceStore.references.reduce((sum, r) => sum + (r.downloads ?? 0), 0)),
+  },
+])
+
+function handleSearch() {
+  if (searchQuery.value) {
+    router.push({ name: 'recherche', query: { q: searchQuery.value } })
+  }
+}
+</script>
 <template>
   <div class="flex min-h-screen flex-col bg-[#f8f9fb]">
     <main class="flex-1">
@@ -77,22 +113,19 @@ function handleSearch() {
             Bibliothèque Numérique
           </h1>
           <p class="mx-auto mt-3 max-w-2xl text-base text-slate-500">
-            Accédez à des milliers de références académiques, thèses, mémoires et articles validés par notre comité institutionnel.
+            Accédez à des milliers de références académiques, thèses, mémoires et articles validés par notre comité
+            institutionnel.
           </p>
-          <form @submit.prevent="handleSearch" class="mx-auto mt-8 flex max-w-xl items-center overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-            <svg class="ml-3 h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          <form @submit.prevent="handleSearch"
+            class="mx-auto mt-8 flex max-w-xl items-center overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <svg class="ml-3 h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
             </svg>
-            <input
-              v-model="searchQuery"
-              type="search"
-              placeholder="Rechercher un titre, un auteur, un mot-clé..."
-              class="flex-1 bg-transparent px-3 py-3 text-sm outline-none"
-            />
-            <button
-              type="submit"
-              class="bg-[#1e3a5f] px-6 py-3 text-sm font-medium text-white hover:bg-[#2d5a8e]"
-            >
+            <input v-model="searchQuery" type="search" placeholder="Rechercher un titre, un auteur, un mot-clé..."
+              class="flex-1 bg-transparent px-3 py-3 text-sm outline-none" />
+            <button type="submit" class="bg-[#1e3a5f] px-6 py-3 text-sm font-medium text-white hover:bg-[#2d5a8e]">
               Rechercher
             </button>
           </form>
@@ -100,7 +133,8 @@ function handleSearch() {
       </section>
 
       <section class="container mx-auto grid grid-cols-1 gap-4 px-4 py-10 sm:grid-cols-3">
-        <div v-for="stat in stats" :key="stat.label" class="rounded-xl border border-slate-200 bg-white p-6 text-center">
+        <div v-for="stat in stats" :key="stat.label"
+          class="rounded-xl border border-slate-200 bg-white p-6 text-center">
           <div class="text-3xl font-semibold text-[#1e3a5f]">{{ stat.value }}</div>
           <div class="mt-1 text-sm text-slate-500">{{ stat.label }}</div>
         </div>
@@ -110,15 +144,25 @@ function handleSearch() {
         <div class="mb-4 flex items-baseline justify-between">
           <h2 class="text-xl font-semibold text-slate-800">Dernières références ajoutées</h2>
         </div>
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          <ReferenceCard v-for="ref in references" :key="ref.id" :reference="ref" />
+
+        <div v-if="referenceStore.isLoading" class="py-10 text-center text-slate-500">
+          Chargement...
+        </div>
+
+        <div v-else-if="latestReferences.length === 0" class="py-10 text-center text-slate-400">
+          Aucune référence publiée pour l'instant.
+        </div>
+
+        <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <ReferenceCard v-for="ref in latestReferences" :key="ref.id" :reference="ref" />
         </div>
       </section>
 
       <section class="container mx-auto px-4 pb-16">
         <h2 class="mb-4 text-xl font-semibold text-slate-800">Catégories</h2>
         <div class="flex flex-wrap gap-2">
-          <span v-for="cat in cats" :key="cat" class="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm text-slate-800 hover:border-[#1e3a5f] hover:text-[#1e3a5f]">
+          <span v-for="cat in cats" :key="cat"
+            class="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-sm text-slate-800 hover:border-[#1e3a5f] hover:text-[#1e3a5f]">
             {{ cat }}
           </span>
         </div>

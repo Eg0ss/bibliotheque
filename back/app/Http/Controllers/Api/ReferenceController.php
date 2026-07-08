@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReferenceResource;
+use App\Models\ConsultationLog;
 use App\Models\DocumentReference;
 
 use Illuminate\Http\Request;
@@ -12,23 +13,15 @@ class ReferenceController extends Controller
 {
     /**
      * Liste toutes les références PUBLIÉES.
-     * Cette route sera publique (accessible sans connexion).
-     *
      * URL : GET /api/references
      */
-    public function index()
+    public function index(Request $request)
     {
-        // On récupère uniquement les références dont le statut est 'published'
-        // ->with(['category', 'type']) charge les relations en une seule requête SQL
-        //   (évite le problème N+1 : sans ça, Laravel ferait 1 requête par référence)
-        // ->latest() trie par date de création décroissante (les plus récentes en premier)
         $references = DocumentReference::where('status', 'published')
             ->with(['category', 'type'])
             ->latest()
             ->get();
 
-        // ReferenceResource::collection() transforme chaque modèle
-        // en utilisant le format défini dans ReferenceResource::toArray()
         return ReferenceResource::collection($references);
     }
 
@@ -36,16 +29,27 @@ class ReferenceController extends Controller
      * Détail d'une référence spécifique.
      * URL : GET /api/references/{id}
      *
-     * @param string $id  L'identifiant de la référence dans l'URL
+     * Cette route est PUBLIQUE (pas de middleware auth:sanctum) :
+     * un visiteur non connecté peut la consulter.
+     * Mais si un cookie de session valide existe, $request->user()
+     * retournera quand même l'utilisateur connecté (grâce à statefulApi()).
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        // findOrFail() cherche par ID et retourne automatiquement une erreur 404
-        // si la référence n'existe pas (au lieu de planter avec une erreur PHP)
         $reference = DocumentReference::with(['category', 'type'])
             ->findOrFail($id);
 
-        // Retourne UNE seule ressource (pas une collection)
-        return new ReferenceResource($reference);
+        // ── Comptabilisation de la vue ───────────────────────────────
+        // On enregistre qui a consulté (ou null si visiteur anonyme),
+        // puis on incrémente le compteur. Ceci se produit à CHAQUE clic,
+        // pour n'importe quel utilisateur, connecté ou non.
+        ConsultationLog::create([
+            'user_id'      => $request->user()?->id,
+            'reference_id' => $reference->id,
+        ]);
+
+        $reference->increment('views_count');
+
+        return new ReferenceResource($reference->fresh(['category', 'type']));
     }
 }
