@@ -98,6 +98,8 @@ class AdminDepotRequestController extends Controller
             return $assignment;
         });
 
+        // dd($assignments->toArray());
+        // \Log::info($assignments->toArray());
         return response()->json($assignments);
     }
 

@@ -43,13 +43,13 @@ function getStatus(status) {
 
     <!-- Chargement -->
     <div v-if="store.loading" class="text-center py-16 text-gray-400">
-      ⏳ Chargement...
+       Chargement...
     </div>
 
     <!-- Liste vide -->
     <div v-else-if="store.documents.length === 0"
       class="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
-      <div class="text-5xl mb-3">📭</div>
+      <div class="text-5xl mb-3"></div>
       <p class="text-gray-400">Aucun document ne vous a été assigné pour le moment.</p>
     </div>
 
@@ -70,7 +70,7 @@ function getStatus(status) {
             <!-- Méta : auteur · type · catégorie -->
             <div class="flex flex-wrap items-center gap-2 mt-1">
               <span class="text-sm text-gray-500">
-                ✍️ {{ assignment.depot_request?.reference?.author ?? '—' }}
+                 {{ assignment.depot_request?.reference?.author ?? '—' }}
               </span>
               <span class="text-gray-300">·</span>
               <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
@@ -90,14 +90,14 @@ function getStatus(status) {
                 </span>
               </span>
               <span>
-                🗓️ {{ formatDate(assignment.created_at) }}
+                 {{ formatDate(assignment.created_at) }}
               </span>
             </div>
 
             <!-- Instructions de l'admin -->
             <div v-if="assignment.instructions"
               class="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
-              <span class="font-medium">📝 Instructions de l'admin :</span>
+              <span class="font-medium"> Instructions de l'admin :</span>
               {{ assignment.instructions }}
             </div>
 
@@ -105,7 +105,7 @@ function getStatus(status) {
             <div v-if="assignment.depot_request?.reference?.documents?.length" class="mt-3 flex flex-wrap gap-2">
               <span v-for="doc in assignment.depot_request.reference.documents" :key="doc.id" class="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600
                        px-2 py-1 rounded-full">
-                📄 {{ doc.original_name ?? 'Fichier joint' }}
+                {{ doc.original_name ?? 'Fichier joint' }}
               </span>
             </div>
             <p v-else class="mt-2 text-xs text-gray-400 italic">
@@ -134,7 +134,7 @@ function getStatus(status) {
             <!-- Bouton Voir → page détail -->
             <RouterLink :to="`/gestionnaire/documents/${assignment.id}`"
               class="mt-1 px-4 py-1.5 bg-[#042C53] text-white text-xs font-medium rounded-lg hover:bg-[#0C447C] transition">
-              👁 Voir
+               Voir
             </RouterLink>
 
           </div>

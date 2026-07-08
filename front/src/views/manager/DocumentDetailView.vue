@@ -69,7 +69,7 @@ function formatDate(d) {
 
     <!-- Chargement -->
     <div v-if="store.loading && !store.currentDocument" class="text-center py-16 text-gray-400">
-      ⏳ Chargement...
+       Chargement...
     </div>
 
     <div v-else-if="store.currentDocument">
@@ -83,7 +83,7 @@ function formatDate(d) {
               {{ store.currentDocument.depot_request?.reference?.title }}
             </h2>
             <p class="text-sm text-gray-500 mt-1">
-              ✍️ {{ store.currentDocument.depot_request?.reference?.author }}
+               {{ store.currentDocument.depot_request?.reference?.author }}
             </p>
           </div>
           <!-- Badges type + catégorie -->
@@ -139,7 +139,7 @@ function formatDate(d) {
           <div v-if="store.currentDocument.depot_request?.reference?.documents?.length" class="flex flex-wrap gap-2">
             <span v-for="doc in store.currentDocument.depot_request.reference.documents" :key="doc.id"
               class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full">
-              📄 {{ doc.original_name }}
+               {{ doc.original_name }}
               <span class="text-blue-400">
                 ({{ doc.file_size ? (doc.file_size / 1024 / 1024).toFixed(2) + ' Mo' : '—' }})
               </span>
@@ -175,7 +175,7 @@ function formatDate(d) {
         <!-- Instructions admin si présentes -->
         <div v-if="store.currentDocument.instructions"
           class="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-lg text-amber-800 text-sm">
-          <span class="font-medium">📝 Instructions de l'admin :</span>
+          <span class="font-medium"> Instructions de l'admin :</span>
           {{ store.currentDocument.instructions }}
         </div>
       </div>

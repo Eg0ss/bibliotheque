@@ -41,6 +41,7 @@ function closeModal() {
   instructions.value = ''
 }
 
+// ── ASSIGNER une demande ─────────────────────────────────────────────
 async function handleAssign() {
   if (!selectedRequest.value || !selectedGest.value || !dueDate.value) return
 
@@ -54,9 +55,11 @@ async function handleAssign() {
   if (success) closeModal()
 }
 
+// ── FORMATS ───────────────────────────────────────────────────────────────
 function formatDate(d) {
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
 }
+
 
 function formatDateTime(date) {
   if (!date) return '—'
@@ -94,7 +97,7 @@ function formatDateTime(date) {
     <!-- Liste vide -->
     <div v-else-if="store.assignments.length === 0"
       class="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
-      <div class="text-5xl mb-3">📋</div>
+      <div class="text-5xl mb-3"></div>
       <p class="text-gray-400">Aucune assignation pour le moment.</p>
     </div>
 

@@ -52,8 +52,6 @@ class DocumentAssignment extends Model
 
     public function getProcessingDuration(): ?array
     {
-        // Garde-fou : si l'une des deux dates est absente, on ne peut pas calculer.
-        // Cas possible :
         //   - processing_started_at est null → gestionnaire n'a jamais ouvert le document
         //   - processed_at est null → gestionnaire n'a pas encore pris de décision
         if (!$this->processing_started_at || !$this->processed_at) {
@@ -62,8 +60,6 @@ class DocumentAssignment extends Model
 
         // diffInSeconds() de Carbon calcule la différence absolue en secondes
         // entre les deux objets Carbon.
-        // On part toujours de processing_started_at vers processed_at
-        // (processed_at est toujours APRÈS processing_started_at).
         $totalSeconds = (int) $this->processing_started_at
                                    ->diffInSeconds($this->processed_at);
 

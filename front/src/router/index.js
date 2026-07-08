@@ -176,26 +176,28 @@ const routes = [
     meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },
     children: [
       {
+        
         path: '',
         name: 'gestionnaire.dashboard',
         meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },
         component: () => import('../views/manager/PendingDocumentsView.vue'),
       },
       {
+       
         path: 'documents',
         name: 'gestionnaire.documents',
         meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },
         component: () => import('../views/manager/PendingDocumentsView.vue'),
       },
       {
-        // ← NOUVELLE route détail document
+        //  route détail document
         path: 'documents/:id',
         name: 'gestionnaire.documents.show',
         meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },
         component: () => import('../views/manager/DocumentDetailView.vue'),
       },
       {
-        // ← NOUVELLE route mes validations
+        //  route mes validations
         path: 'validations',
         name: 'gestionnaire.validations',
         meta: { layout: 'admin', requiresAuth: true, role: 'gestionnaire' },

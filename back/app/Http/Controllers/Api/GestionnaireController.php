@@ -52,9 +52,7 @@ class GestionnaireController extends Controller
             ->where('assigned_to', Auth::id())
             ->findOrFail($id);
 
-        /*
-| Démarrage du chronomètre
-*/
+          //Démarrage du chronomètre
         if (is_null($assignment->processing_started_at)) {
 
             $assignment->update([
@@ -65,6 +63,8 @@ class GestionnaireController extends Controller
             $assignment->refresh();
         }
 
+        // dd($assignment->toArray());
+        // \Log::info($assignment->toArray());
         return response()->json([
             'data' => $assignment
         ]);
