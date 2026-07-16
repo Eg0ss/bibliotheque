@@ -107,30 +107,66 @@ function handleSearch() {
 <template>
   <div class="flex min-h-screen flex-col bg-[#f8f9fb]">
     <main class="flex-1">
-      <section class="border-b border-slate-200 bg-white">
-        <div class="container mx-auto px-4 py-16 text-center">
-          <h1 class="text-4xl font-semibold tracking-tight text-slate-800 sm:text-5xl">
-            Bibliothèque Numérique
-          </h1>
-          <p class="mx-auto mt-3 max-w-2xl text-base text-slate-500">
-            Accédez à des milliers de références académiques, thèses, mémoires et articles validés par notre comité
-            institutionnel.
-          </p>
-          <form @submit.prevent="handleSearch"
-            class="mx-auto mt-8 flex max-w-xl items-center overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-            <svg class="ml-3 h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-            <input v-model="searchQuery" type="search" placeholder="Rechercher un titre, un auteur, un mot-clé..."
-              class="flex-1 bg-transparent px-3 py-3 text-sm outline-none" />
-            <button type="submit" class="bg-[#1e3a5f] px-6 py-3 text-sm font-medium text-white hover:bg-[#2d5a8e]">
-              Rechercher
-            </button>
-          </form>
-        </div>
-      </section>
+     <section class="relative overflow-hidden border-b border-slate-200 min-h-[560px] flex items-center">
+  <!-- Vidéo de fond -->
+  <video
+    autoplay
+    loop
+    muted
+    playsinline
+    class="absolute inset-0 h-full w-full object-cover"
+  >
+    <source src="/video/animationbiblio.mp4" type="video/mp4" />
+  </video>
+
+  <!-- Dégradé pour assurer la lisibilité, plus sombre en bas où se trouve le texte -->
+  <div class="absolute inset-0 bg-gradient-to-b from-white/50 via-white/50 to-white/50"></div>
+
+  <!-- Contenu -->
+  <div class="container relative z-10 mx-auto px-4 py-16 text-center">
+
+    <h1 class="mt-5 text-4xl font-semibold tracking-tight text-slate-900 drop-shadow-sm sm:text-5xl">
+      Bibliothèque Numérique
+    </h1>
+
+    <p class="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-600">
+      Accédez à des milliers de références académiques, thèses, mémoires et articles validés par notre comité
+      institutionnel.
+    </p>
+
+    <form
+      @submit.prevent="handleSearch"
+      class="mx-auto mt-8 flex max-w-xl items-center overflow-hidden rounded-lg border border-slate-200 bg-white shadow-md"
+    >
+      <svg
+        class="ml-3 h-5 w-5 text-slate-400"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+        />
+      </svg>
+      <input
+        v-model="searchQuery"
+        type="search"
+        placeholder="Rechercher un titre, un auteur, un mot-clé..."
+        class="flex-1 bg-transparent px-3 py-3 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+      />
+      <button
+        type="submit"
+        class="bg-[#1e3a5f] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#2d5a8e]"
+      >
+        Rechercher
+      </button>
+    </form>
+  </div>
+</section>
 
       <section class="container mx-auto grid grid-cols-1 gap-4 px-4 py-10 sm:grid-cols-3">
         <div v-for="stat in stats" :key="stat.label"
