@@ -136,7 +136,9 @@ class AdminDepotRequestController extends Controller
 
         //declancher event
         $assignment->load(['depotRequest.reference', 'assignedBy']);
-    AssignmentCreated::dispatch($assignment);
+
+        //Déclencher l'event → SendAssignmentNotification s'exécute
+        AssignmentCreated::dispatch($assignment);
 
         return response()->json([
             'message'    => 'Demande assignée avec succès.',

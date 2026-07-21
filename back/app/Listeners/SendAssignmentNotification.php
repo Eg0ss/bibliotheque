@@ -5,6 +5,11 @@ namespace App\Listeners;
 use App\Events\AssignmentCreated;
 use App\Models\User;
 use App\Notifications\AssignmentReceivedNotification;
+use Illuminate\Events\Attributes\ListensTo;
+
+// Déclaration de l'event à écouter
+#[ListensTo(AssignmentCreated::class)]
+
 
 class SendAssignmentNotification
 {
