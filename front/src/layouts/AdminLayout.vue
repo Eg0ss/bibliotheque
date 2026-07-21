@@ -1,11 +1,30 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { RouterLink, useRoute } from 'vue-router'
+import { useNotificationStore } from '@/stores/notificationStore'
 
+const notifStore = useNotificationStore()
+const showNotifPanel = ref(false)
 const authStore = useAuthStore()
 const route = useRoute()
 const openGroup = ref(null)
+
+
+// Charger le count au montage de la sidebar
+onMounted(() => {
+  if (authStore.userRole === 'gestionnaire') {
+    notifStore.fetchUnreadCount()
+  }
+})
+
+function toggleNotifPanel() {
+  showNotifPanel.value = !showNotifPanel.value
+  if (showNotifPanel.value) {
+    notifStore.fetchNotifications()
+  }
+}
+
 
 function toggleGroup(name) {
   openGroup.value = openGroup.value === name ? null : name
@@ -181,7 +200,68 @@ async function handleLogout() {
         <h2 class="text-sm font-medium text-gray-500 capitalize">
           {{ route.name?.toString().replace(/\./g, ' › ') }}
         </h2>
-        <span class="text-sm text-gray-400">{{ authStore.user?.email }}</span>
+
+        <div class="flex items-center gap-4">
+
+          <!-- 🔔 Cloche notifications (visible uniquement pour le gestionnaire) -->
+          <div v-if="authStore.userRole === 'gestionnaire'" class="relative">
+            <button @click="toggleNotifPanel"
+              class="relative p-2 rounded-lg hover:bg-gray-100 transition text-gray-500">
+              🔔
+              <!-- Badge rouge avec le nombre de non lues -->
+              <span v-if="notifStore.unreadCount > 0" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs
+                 rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                {{ notifStore.unreadCount > 9 ? '9+' : notifStore.unreadCount }}
+              </span>
+            </button>
+
+            <!-- Panel de notifications -->
+            <div v-if="showNotifPanel" class="absolute right-0 top-10 w-80 bg-white rounded-xl shadow-xl border
+               border-gray-200 z-50 overflow-hidden">
+
+              <!-- Header panel -->
+              <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                <span class="text-sm font-semibold text-gray-800">Notifications</span>
+                <button v-if="notifStore.unreadCount > 0" @click="notifStore.markAllRead()"
+                  class="text-xs text-[#042C53] hover:underline">
+                  Tout marquer comme lu
+                </button>
+              </div>
+
+              <!-- Liste -->
+              <div class="max-h-80 overflow-y-auto divide-y divide-gray-100">
+                <div v-if="notifStore.loading" class="py-8 text-center text-gray-400 text-sm">
+                  Chargement...
+                </div>
+                <div v-else-if="notifStore.notifications.length === 0" class="py-8 text-center text-gray-400 text-sm">
+                  Aucune notification
+                </div>
+                <div v-else v-for="notif in notifStore.notifications" :key="notif.id"
+                  @click="notifStore.markRead(notif.id)" class="px-4 py-3 cursor-pointer hover:bg-gray-50 transition"
+                  :class="{ 'bg-blue-50': !notif.read_at }">
+                  <!-- Point bleu si non lue -->
+                  <div class="flex items-start gap-2">
+                    <span v-if="!notif.read_at" class="mt-1.5 h-2 w-2 rounded-full bg-blue-500 flex-shrink-0"></span>
+                    <span v-else class="mt-1.5 h-2 w-2 flex-shrink-0"></span>
+                    <div>
+                      <p class="text-sm text-gray-800 font-medium">
+                        {{ notif.data.reference_title }}
+                      </p>
+                      <p class="text-xs text-gray-500 mt-0.5">
+                        {{ notif.data.message }}
+                      </p>
+                      <p class="text-xs text-gray-400 mt-1">
+                        Par {{ notif.data.assigned_by_name }} · {{ notif.data.assigned_at }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <span class="text-sm text-gray-400">{{ authStore.user?.email }}</span>
+        </div>
       </header>
 
       <main class="ml-69 flex-1 min-h-screen overflow-y-auto">

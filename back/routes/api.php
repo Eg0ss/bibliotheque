@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\AdminDepotRequestController;
 use App\Http\Controllers\Api\GestionnaireController;
 use App\Http\Controllers\Api\ReferenceController;
 use App\Http\Controllers\Api\ReferenceInteractionController;
+use App\Http\Controllers\Api\NotificationController;
 
 // ── Routes publiques ─────────────────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register']);
@@ -29,6 +30,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Interaction téléchargement / like────────────────────────────────────────────────────────
     Route::get('/references/{id}/telecharger', [ReferenceInteractionController::class, 'download']);
     Route::post('/references/{id}/like',        [ReferenceInteractionController::class, 'toggleLike']);
+
+    // ── NOTIFICATIONS───────────────────────────────────────────────
+    Route::prefix('notifications')->group(function () {
+    Route::get('/',           [NotificationController::class, 'index']);  // liste
+    Route::patch('/{id}/read',[NotificationController::class, 'markRead']); // marquer lue
+    Route::patch('/read-all', [NotificationController::class, 'markAllRead']); // tout lire
+    Route::get('/unread-count',[NotificationController::class, 'unreadCount']); // badge
+});
 
     // ── ADMIN ────────────────────────────────────────────────────────────
     Route::prefix('admin')->group(function () {

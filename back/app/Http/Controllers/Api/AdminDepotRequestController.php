@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ValidationStep;
+use App\Events\AssignmentCreated;
 
 class AdminDepotRequestController extends Controller
 {
@@ -132,6 +133,10 @@ class AdminDepotRequestController extends Controller
 
         // Mettre à jour le statut de la demande
         $depotRequest->update(['status' => 'assigned']);
+
+        //declancher event
+        $assignment->load(['depotRequest.reference', 'assignedBy']);
+    AssignmentCreated::dispatch($assignment);
 
         return response()->json([
             'message'    => 'Demande assignée avec succès.',
