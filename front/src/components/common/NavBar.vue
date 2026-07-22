@@ -64,9 +64,9 @@ async function handleLogout() {
         <RouterLink to="/recherche" class="rounded-md px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800" :class="{ 'bg-slate-100 text-[#1e3a5f]': $route.path === '/recherche' }">
           Recherche
         </RouterLink>
-        <RouterLink to="/statistiques" class="rounded-md px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800" :class="{ 'bg-slate-100 text-[#1e3a5f]': $route.path === '/statistiques' }">
+        <!-- <RouterLink to="/statistiques" class="rounded-md px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800" :class="{ 'bg-slate-100 text-[#1e3a5f]': $route.path === '/statistiques' }">
           Statistiques
-        </RouterLink>
+        </RouterLink> -->
       </nav>
 
       <div class="flex items-center gap-4">

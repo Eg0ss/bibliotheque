@@ -6,7 +6,9 @@ import {
   fetchReferenceById,
   downloadReferenceFile,
   toggleLikeReference,
+  searchReferences,
 } from '@/api/referenceApi'
+import apiClient from '@/api/axios'
 
 export const useReferenceStore = defineStore('references', () => {
   // ── État ──────────────────────────────────────────────────────────────
@@ -14,6 +16,13 @@ export const useReferenceStore = defineStore('references', () => {
   const currentReference = ref(null)
   const isLoading = ref(false)
   const error = ref(null)
+  
+  const searchResults  = ref([])    // résultats de la recherche
+  const searchTotal    = ref(0)     // total de résultats trouvés
+  const searchMeta     = ref(null)  // infos pagination (current_page, last_page...)
+  const isSearching    = ref(false) // true pendant l'appel API recherche
+  const categories     = ref([])    // liste des catégories pour le filtre
+  const types          = ref([])    // liste des types pour le filtre
 
   const toast = useToast()
 
@@ -48,6 +57,51 @@ export const useReferenceStore = defineStore('references', () => {
       isLoading.value = false
     }
   }
+
+  // ── NOUVELLE FONCTION : charger catégories et types pour les filtres ───
+  async function loadFiltersOptions() {
+    try {
+      // On fait les deux appels en parallèle (Promise.all = plus rapide)
+      const [catsRes, typesRes] = await Promise.all([
+        apiClient.get('/api/categories'),
+        apiClient.get('/api/types'),
+      ])
+      categories.value = catsRes.data.data
+      types.value      = typesRes.data.data
+    } catch (err) {
+      console.error('Erreur chargement filtres :', err)
+    }
+  }
+
+  // ── NOUVELLE FONCTION : recherche dynamique ────────────────────────────
+  /**
+   * Effectue la recherche en envoyant les filtres à Laravel.
+   * @param {Object} filters - { search, category_id, type_id, page }
+   */
+  async function search(filters = {}) {
+    isSearching.value = true
+    error.value = null
+    try {
+      // On nettoie les filtres vides pour ne pas envoyer category_id='' à Laravel
+      const cleanFilters = Object.fromEntries(
+        Object.entries(filters).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+      )
+
+      const response = await searchReferences(cleanFilters)
+
+      // Laravel paginate() retourne data + meta avec les infos de pagination
+      searchResults.value = response.data.data
+      searchMeta.value    = response.data.meta
+      searchTotal.value   = response.data.meta?.total ?? response.data.data.length
+
+    } catch (err) {
+      error.value = 'Erreur lors de la recherche.'
+      toast.add({ severity: 'error', summary: 'Erreur', detail: 'Recherche impossible.', life: 3000 })
+    } finally {
+      isSearching.value = false
+    }
+  }
+
 
   /**
    * Traite les erreurs communes au like et au téléchargement :
@@ -165,9 +219,11 @@ export const useReferenceStore = defineStore('references', () => {
     currentReference,
     isLoading,
     error,
+     searchResults, searchTotal, searchMeta, isSearching, categories, types,
     loadReferences,
     loadReference,
     likeReference,
     downloadReference,
+    search, loadFiltersOptions,
   }
 })

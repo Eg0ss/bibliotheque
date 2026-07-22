@@ -37,3 +37,15 @@ export function downloadReferenceFile(id) {
 export function toggleLikeReference(id) {
   return apiClient.post(`/api/references/${id}/like`)
 }
+
+/**
+ * Recherche avancée avec filtres.
+ * @param {Object} params - Les paramètres de filtre
+ *   { search: string, category_id: number, type_id: number, page: number }
+ *
+ * Axios transforme automatiquement l'objet params en query string :
+ * { search: 'droit', category_id: 2 } → ?search=droit&category_id=2
+ */
+export function searchReferences(params = {}) {
+  return apiClient.get('/api/references', { params })
+}
